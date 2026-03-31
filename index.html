@@ -271,6 +271,105 @@
 
         /* ===== 供应商采购报告页 ===== */
 
+        /* 报告正文（markdown 渲染结果） */
+        .report-html-body {
+            padding: 0 16px 24px;
+            color: var(--text);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .report-html-body h1 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        .report-html-body h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 20px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+            color: #fff;
+        }
+        .report-html-body h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 16px 0 8px;
+            color: var(--text);
+        }
+        .report-html-body h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 12px 0 6px;
+            color: var(--accent);
+        }
+        .report-html-body p {
+            margin: 8px 0;
+        }
+        .report-html-body ul, .report-html-body ol {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+        .report-html-body li {
+            margin-bottom: 4px;
+        }
+        .report-html-body strong {
+            color: #fff;
+        }
+        .report-html-body blockquote {
+            border-left: 3px solid var(--accent);
+            padding: 8px 12px;
+            margin: 8px 0;
+            background: rgba(59,130,246,0.08);
+            border-radius: 6px;
+            color: var(--text-muted);
+        }
+        .report-html-body hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 16px 0;
+        }
+        .report-html-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 12px;
+            display: block;
+            overflow-x: auto;
+        }
+        .report-html-body th, .report-html-body td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+        .report-html-body th {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .report-html-body code {
+            background: rgba(59,130,246,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .report-html-body pre {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+        .report-html-body pre code {
+            background: none;
+            padding: 0;
+        }
+        .report-html-body div {
+            overflow-x: auto;
+        }
+
         /* 报告列表 */
         .report-list {
             padding: 16px;
@@ -682,70 +781,13 @@
         detail.classList.add('active');
 
         let html = `<button class="back-btn" onclick="closeReport()">← 返回报告列表</button>`;
-        html += `<div class="detail-content">`;
-
-        // 报告头
-        html += `
-        <div class="detail-header">
-            <div class="title">${currentReport.supplierName}${currentReport.product ? `（${currentReport.product}）` : ''}</div>
-            <div class="date-line">${currentReport.reportDate} | 分析师：采购专家团</div>
-            <div style="margin-bottom:10px;">${getRiskEmoji(currentReport.overallRisk)} 风险等级：<strong>${getRiskLabel(currentReport.overallRisk)}</strong></div>
-            <div class="overall-assessment">${currentReport.summary}</div>
-        </div>`;
-
-        // 维度表格
-        if (currentReport.dimensions && currentReport.dimensions.length > 0) {
-            html += `<div class="detail-section"><h3>📌 各维度风险汇总</h3>`;
-            html += `<div style="overflow-x:auto"><table class="risk-table"><tr><th>维度</th><th>风险</th><th>说明</th></tr>`;
-            currentReport.dimensions.forEach(d => {
-                html += `<tr><td>${d.name}</td><td>${getRiskEmoji(d.risk)} ${getRiskLabel(d.risk)}</td><td>${d.desc}</td></tr>`;
-            });
-            html += `</table></div></div>`;
-        }
-
-        // 关键风险点
-        if (currentReport.keyRisks && currentReport.keyRisks.length > 0) {
-            html += `<div class="detail-section"><h3>🔍 关键风险点</h3>`;
-            currentReport.keyRisks.forEach(r => {
-                html += `<div class="risk-signal"><strong>${r.title}</strong><br>${r.detail}</div>`;
-            });
-            html += `</div>`;
-        }
-
-        // 详细分析
-        if (currentReport.sections && currentReport.sections.length > 0) {
-            currentReport.sections.forEach(sec => {
-                html += `<div class="detail-section"><h3>${sec.title}</h3>`;
-                if (sec.content) html += `<p>${sec.content}</p>`;
-                if (sec.html) html += sec.html;
-                html += `</div>`;
-            });
-        }
-
-        // 建议措施
-        if (currentReport.recommendations && currentReport.recommendations.length > 0) {
-            html += `<div class="detail-section"><h3>💡 建议措施</h3>`;
-            currentReport.recommendations.forEach(rec => {
-                html += `<div class="detail-section" style="background:transparent;border:none;padding:0;margin:0;"><h4>${rec.period}</h4><p>${rec.content}</p></div>`;
-            });
-            html += `</div>`;
-        }
-
-        // 信息来源
-        if (currentReport.sources) {
-            html += `<div class="report-footer">${currentReport.sources}</div>`;
-        }
-
-        // 生成时间
-        if (currentReport.genTime) {
-            html += `<div class="report-footer">报告生成时间：${currentReport.genTime}</div>`;
-        }
-
+        html += `<div class="report-html-body">`;
+        html += currentReport.htmlBody;
         html += `</div>`;
+
         detail.innerHTML = html;
         document.getElementById('updateTime').textContent =
             `${currentReport.supplierName} | 供应商采购报告`;
-        // 滚动到顶部
         window.scrollTo(0, 0);
     }
 
