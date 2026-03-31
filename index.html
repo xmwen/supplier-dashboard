@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>采购风险预警快报</title>
+    <title>采购风险看板</title>
     <style>
         :root {
             --bg: #0f1117;
@@ -48,6 +48,42 @@
             color: var(--text-muted);
             margin-top: 4px;
         }
+
+        /* 页面导航 */
+        .page-nav {
+            display: flex;
+            gap: 0;
+            padding: 0 16px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .page-nav-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .page-nav-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .page-nav-btn:hover:not(.active) {
+            color: var(--text);
+        }
+
+        /* 页面容器 */
+        .page { display: none; }
+        .page.active { display: block; }
 
         /* 日期选择器 */
         .date-tabs {
@@ -221,33 +257,279 @@
             color: var(--text-muted);
         }
 
+        /* ===== 供应商采购报告页 ===== */
+
+        /* 报告列表 */
+        .report-list {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .report-list-card {
+            background: var(--card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .report-list-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .report-list-card .name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .report-list-card .meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .report-list-card .summary {
+            font-size: 13px;
+            color: var(--text);
+            margin-top: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* 报告详情 */
+        .report-detail { display: none; }
+        .report-detail.active { display: block; }
+
+        .report-detail .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            margin: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .report-detail .back-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .detail-content {
+            padding: 0 16px 16px;
+        }
+
+        .detail-header {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .detail-header .title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .detail-header .date-line {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .detail-header .overall-assessment {
+            font-size: 13px;
+            line-height: 1.8;
+            color: var(--text);
+        }
+
+        /* 维度表格 */
+        .risk-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 12px;
+        }
+
+        .risk-table th, .risk-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .risk-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .risk-table td {
+            color: var(--text);
+        }
+
+        /* 详细分析章节 */
+        .detail-section {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .detail-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-section h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin: 12px 0 6px;
+            color: var(--accent);
+        }
+
+        .detail-section p, .detail-section li {
+            font-size: 13px;
+            line-height: 1.8;
+            color: var(--text);
+        }
+
+        .detail-section ul, .detail-section ol {
+            padding-left: 20px;
+        }
+
+        .detail-section li {
+            margin-bottom: 4px;
+        }
+
+        .detail-section strong {
+            color: var(--text);
+        }
+
+        .detail-section .risk-label-high { color: var(--high); }
+        .detail-section .risk-label-mid { color: var(--mid); }
+        .detail-section .risk-label-low { color: var(--low); }
+
+        /* SVG 图表容器 */
+        .chart-container {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .chart-container svg {
+            width: 100%;
+            height: auto;
+            min-width: 300px;
+        }
+
+        .chart-caption {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .info-note {
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 8px 12px;
+            background: rgba(59,130,246,0.08);
+            border-radius: 8px;
+            margin: 8px 0;
+            border-left: 3px solid var(--accent);
+        }
+
         @media (min-width: 768px) {
             .header { padding: 24px 32px; }
             .header h1 { font-size: 22px; }
             .date-tabs { padding: 12px 32px; }
             .report-content { padding: 20px 32px; }
             .stats-bar { padding: 12px 32px; }
+            .report-list { padding: 20px 32px; }
+            .detail-content { padding: 0 32px 32px; }
+            .report-detail .back-btn { margin: 12px 32px; }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>📋 采购风险预警快报</h1>
+        <h1>📋 采购风险看板</h1>
         <div class="subtitle" id="updateTime">加载中...</div>
     </div>
 
-    <div class="date-tabs" id="dateTabs"></div>
-    <div class="stats-bar" id="statsBar"></div>
-    <div class="report-content" id="reportContent">
-        <div class="loading">加载中...</div>
+    <div class="page-nav">
+        <button class="page-nav-btn active" onclick="switchPage('alerts')">⚡ 供应商采购预警</button>
+        <button class="page-nav-btn" onclick="switchPage('reports')">📊 供应商采购报告</button>
+    </div>
+
+    <!-- ===== 页面1：供应商采购预警 ===== -->
+    <div class="page active" id="page-alerts">
+        <div class="date-tabs" id="dateTabs"></div>
+        <div class="stats-bar" id="statsBar"></div>
+        <div class="report-content" id="reportContent">
+            <div class="loading">加载中...</div>
+        </div>
+    </div>
+
+    <!-- ===== 页面2：供应商采购报告 ===== -->
+    <div class="page" id="page-reports">
+        <!-- 报告列表 -->
+        <div class="report-list" id="reportList"></div>
+        <!-- 报告详情 -->
+        <div class="report-detail" id="reportDetail"></div>
     </div>
 
     <script>
-    // 快报数据 - 由构建脚本生成
+    // 数据 - 由构建脚本生成
+    const ALERTS = __ALERTS_DATA__;
     const REPORTS = __REPORTS_DATA__;
 
+    let currentAlert = null;
     let currentReport = null;
 
+    // ===== 页面切换 =====
+    function switchPage(page) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.page-nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('page-' + page).classList.add('active');
+        if (page === 'alerts') {
+            document.querySelectorAll('.page-nav-btn')[0].classList.add('active');
+            document.getElementById('updateTime').textContent =
+                currentAlert ? `${currentAlert.date} | 供应商采购预警` : '供应商采购预警';
+        } else {
+            document.querySelectorAll('.page-nav-btn')[1].classList.add('active');
+            document.getElementById('updateTime').textContent =
+                `共 ${REPORTS.length} 份采购报告 | 供应商采购报告`;
+            if (document.getElementById('reportList').innerHTML === '') {
+                renderReportList();
+            }
+        }
+    }
+
+    // ===== 通用函数 =====
     function formatDate(dateStr) {
         const d = new Date(dateStr);
         const month = d.getMonth() + 1;
@@ -282,16 +564,17 @@
         return { high: '🔴', mid: '🟡', low: '🟢', none: '🚫' }[risk];
     }
 
+    // ===== 页面1：采购预警 =====
     function renderDateTabs() {
         const container = document.getElementById('dateTabs');
         container.innerHTML = '';
-        REPORTS.forEach((report, idx) => {
+        ALERTS.forEach((report, idx) => {
             const tab = document.createElement('div');
             tab.className = 'date-tab' + (idx === 0 ? ' active' : '');
             const risk = getHighestRisk(report);
             tab.innerHTML = formatDate(report.date) +
                 `<span class="risk-dot" style="background:${getRiskColor(risk)}"></span>`;
-            tab.onclick = () => selectReport(idx);
+            tab.onclick = () => selectAlert(idx);
             container.appendChild(tab);
         });
     }
@@ -308,14 +591,12 @@
         `;
     }
 
-    function renderReport(report) {
+    function renderAlertContent(report) {
         const container = document.getElementById('reportContent');
-
         if (!report) {
-            container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无快报数据</div></div>`;
+            container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无预警数据</div></div>`;
             return;
         }
-
         let html = '';
         report.suppliers.forEach(supplier => {
             html += `
@@ -337,32 +618,132 @@
                 </div>
             </div>`;
         });
-
         html += `<div class="report-footer">${report.footer}</div>`;
         container.innerHTML = html;
     }
 
-    function selectReport(idx) {
-        currentReport = REPORTS[idx];
+    function selectAlert(idx) {
+        currentAlert = ALERTS[idx];
         document.querySelectorAll('.date-tab').forEach((tab, i) => {
             tab.classList.toggle('active', i === idx);
         });
-        renderStats(currentReport);
-        renderReport(currentReport);
+        renderStats(currentAlert);
+        renderAlertContent(currentAlert);
         document.getElementById('updateTime').textContent =
-            `${currentReport.date} | 采购发现团自动生成`;
+            `${currentAlert.date} | 供应商采购预警`;
     }
 
-    // 初始化
-    if (REPORTS.length > 0) {
+    // ===== 页面2：采购报告 =====
+    function renderReportList() {
+        const container = document.getElementById('reportList');
+        if (REPORTS.length === 0) {
+            container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无采购报告</div></div>`;
+            return;
+        }
+        let html = '';
+        REPORTS.forEach((report, idx) => {
+            html += `
+            <div class="report-list-card" onclick="openReport(${idx})">
+                <div class="name">${report.supplierName}${report.product ? `（${report.product}）` : ''}</div>
+                <div class="meta">
+                    <span>${report.reportDate}</span>
+                    <span>${getRiskEmoji(report.overallRisk)} ${getRiskLabel(report.overallRisk)}</span>
+                </div>
+                <div class="summary">${report.summary}</div>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function openReport(idx) {
+        currentReport = REPORTS[idx];
+        document.getElementById('reportList').style.display = 'none';
+        const detail = document.getElementById('reportDetail');
+        detail.classList.add('active');
+
+        let html = `<button class="back-btn" onclick="closeReport()">← 返回报告列表</button>`;
+        html += `<div class="detail-content">`;
+
+        // 报告头
+        html += `
+        <div class="detail-header">
+            <div class="title">${currentReport.supplierName}${currentReport.product ? `（${currentReport.product}）` : ''}</div>
+            <div class="date-line">${currentReport.reportDate} | 分析师：采购专家团</div>
+            <div style="margin-bottom:10px;">${getRiskEmoji(currentReport.overallRisk)} 风险等级：<strong>${getRiskLabel(currentReport.overallRisk)}</strong></div>
+            <div class="overall-assessment">${currentReport.summary}</div>
+        </div>`;
+
+        // 维度表格
+        if (currentReport.dimensions && currentReport.dimensions.length > 0) {
+            html += `<div class="detail-section"><h3>📌 各维度风险汇总</h3>`;
+            html += `<div style="overflow-x:auto"><table class="risk-table"><tr><th>维度</th><th>风险</th><th>说明</th></tr>`;
+            currentReport.dimensions.forEach(d => {
+                html += `<tr><td>${d.name}</td><td>${getRiskEmoji(d.risk)} ${getRiskLabel(d.risk)}</td><td>${d.desc}</td></tr>`;
+            });
+            html += `</table></div></div>`;
+        }
+
+        // 关键风险点
+        if (currentReport.keyRisks && currentReport.keyRisks.length > 0) {
+            html += `<div class="detail-section"><h3>🔍 关键风险点</h3>`;
+            currentReport.keyRisks.forEach(r => {
+                html += `<div class="risk-signal"><strong>${r.title}</strong><br>${r.detail}</div>`;
+            });
+            html += `</div>`;
+        }
+
+        // 详细分析
+        if (currentReport.sections && currentReport.sections.length > 0) {
+            currentReport.sections.forEach(sec => {
+                html += `<div class="detail-section"><h3>${sec.title}</h3>`;
+                if (sec.content) html += `<p>${sec.content}</p>`;
+                if (sec.html) html += sec.html;
+                html += `</div>`;
+            });
+        }
+
+        // 建议措施
+        if (currentReport.recommendations && currentReport.recommendations.length > 0) {
+            html += `<div class="detail-section"><h3>💡 建议措施</h3>`;
+            currentReport.recommendations.forEach(rec => {
+                html += `<div class="detail-section" style="background:transparent;border:none;padding:0;margin:0;"><h4>${rec.period}</h4><p>${rec.content}</p></div>`;
+            });
+            html += `</div>`;
+        }
+
+        // 信息来源
+        if (currentReport.sources) {
+            html += `<div class="report-footer">${currentReport.sources}</div>`;
+        }
+
+        // 生成时间
+        if (currentReport.genTime) {
+            html += `<div class="report-footer">报告生成时间：${currentReport.genTime}</div>`;
+        }
+
+        html += `</div>`;
+        detail.innerHTML = html;
+        document.getElementById('updateTime').textContent =
+            `${currentReport.supplierName} | 供应商采购报告`;
+    }
+
+    function closeReport() {
+        document.getElementById('reportList').style.display = 'flex';
+        document.getElementById('reportDetail').classList.remove('active');
+        document.getElementById('updateTime').textContent =
+            `共 ${REPORTS.length} 份采购报告 | 供应商采购报告`;
+    }
+
+    // ===== 初始化 =====
+    if (ALERTS.length > 0) {
         renderDateTabs();
-        selectReport(0);
+        selectAlert(0);
     } else {
         document.getElementById('dateTabs').innerHTML = '';
         document.getElementById('statsBar').innerHTML = '';
         document.getElementById('reportContent').innerHTML =
-            `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无快报数据</div></div>`;
-        document.getElementById('updateTime').textContent = '采购发现团快报看板';
+            `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无预警数据</div></div>`;
+        document.getElementById('updateTime').textContent = '供应商采购预警';
     }
     </script>
 </body>

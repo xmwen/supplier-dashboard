@@ -1,6 +1,7 @@
 """
-采购发现团 - 快报看板构建脚本
-读取 supplier_discover/output/ 目录下的快报 md 文件，解析并生成 index.html
+采购风险看板 - 构建脚本
+读取 supplier_discover/output/ 下的预警快报 + supplier_analysis/output/ 下的采购报告
+解析并生成 index.html
 """
 
 import re
@@ -11,22 +12,23 @@ from datetime import datetime
 
 # 路径配置
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-# 快报源目录（supplier_discover 的 output）
-REPORTS_SOURCE_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), "supplier_discover", "output")
+WORKBuddy_DIR = os.path.dirname(SCRIPT_DIR)
+ALERTS_SOURCE_DIR = os.path.join(WORKBuddy_DIR, "supplier_discover", "output")
+REPORTS_SOURCE_DIR = os.path.join(WORKBuddy_DIR, "supplier_analysis", "output")
 TEMPLATE_PATH = os.path.join(SCRIPT_DIR, "index.html")
 DIST_PATH = os.path.join(SCRIPT_DIR, "dist", "index.html")
 
 
-def parse_date_from_filename(filename):
-    """从文件名中提取日期：采购风险预警快报_20260330.md → 2026-03-30"""
+# ==================== 预警快报解析 ====================
+
+def parse_alert_date(filename):
     match = re.search(r"(\d{4})(\d{2})(\d{2})", filename)
     if match:
         return f"{match.group(1)}-{match.group(2)}-{match.group(3)}"
     return None
 
 
-def parse_risk_level(text):
-    """从标题行提取风险等级"""
+def parse_alert_risk(text):
     if "高风险" in text or "🔴" in text:
         return "high"
     elif "中风险" in text or "🟡" in text:
@@ -38,129 +40,316 @@ def parse_risk_level(text):
     return "none"
 
 
-def parse_supplier_name_and_product(heading):
-    """解析供应商标题行，提取名称和产品"""
+def parse_alert_supplier(heading):
     heading = heading.strip()
-
-    # 提取产品（可选）
     product = None
     product_match = re.search(r"（产品：(.+?)）", heading)
     if product_match:
         product = product_match.group(1)
-
-    # 提取名称
     name_match = re.search(r"\[([^\]]+)\]", heading)
-    if name_match:
-        name = name_match.group(1)
-    else:
-        name = "未知供应商"
-
-    risk = parse_risk_level(heading)
-
+    name = name_match.group(1) if name_match else "未知供应商"
+    risk = parse_alert_risk(heading)
     return name, product, risk
 
 
-def parse_report(filepath):
-    """解析单个快报 md 文件"""
+def parse_alert_file(filepath):
     filename = os.path.basename(filepath)
-    date = parse_date_from_filename(filename)
+    date = parse_alert_date(filename)
     if not date:
         return None
-
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
-
     suppliers = []
     signals = []
-    current_name = None
-    current_product = None
-    current_risk = None
+    current_name = current_product = current_risk = None
     footer = ""
-
-    lines = content.split("\n")
     in_footer = False
-
-    for line in lines:
-        # 检测供应商标题行
+    for line in content.split("\n"):
         if line.startswith("## ["):
-            # 保存上一个供应商
             if current_name:
-                suppliers.append({
-                    "name": current_name,
-                    "product": current_product,
-                    "risk": current_risk,
-                    "signals": signals.copy()
-                })
+                suppliers.append({"name": current_name, "product": current_product, "risk": current_risk, "signals": signals.copy()})
                 signals = []
-
-            current_name, current_product, current_risk = parse_supplier_name_and_product(line)
-
-        # 检测风险信号（以 - 开头的列表项）
+            current_name, current_product, current_risk = parse_alert_supplier(line)
         elif line.strip().startswith("- ") and current_name and not in_footer:
-            # 跳过"该供应商今日未发现"这种
             if "未发现" not in line and "无异常" not in line:
-                signal_text = line.strip()[2:]  # 去掉 "- "
-                # 转义 HTML 特殊字符
-                signal_text = signal_text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-                signals.append(signal_text)
-
-        # 检测页脚
+                sig = line.strip()[2:].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                signals.append(sig)
         elif line.startswith("报告生成时间："):
             in_footer = True
             footer = line.strip()
         elif in_footer and line.strip():
             footer += " | " + line.strip()
-
-    # 保存最后一个供应商
     if current_name:
-        suppliers.append({
-            "name": current_name,
-            "product": current_product,
-            "risk": current_risk,
-            "signals": signals.copy()
-        })
+        suppliers.append({"name": current_name, "product": current_product, "risk": current_risk, "signals": signals.copy()})
+    return {"date": date, "suppliers": suppliers, "footer": footer}
 
-    return {
-        "date": date,
-        "suppliers": suppliers,
-        "footer": footer
+
+# ==================== 采购报告解析 ====================
+
+def parse_report_risk(text):
+    if "🔴" in text or "高风险" in text or "高" == text.strip():
+        return "high"
+    elif "🟡" in text or "中风险" in text or "中" == text.strip():
+        return "mid"
+    elif "🟢" in text or "低风险" in text or "低" == text.strip():
+        return "low"
+    return "none"
+
+
+def parse_report_date_from_filename(filename):
+    match = re.search(r"(\d{4})(\d{2})(\d{2})", filename)
+    if match:
+        return f"{match.group(1)}年{match.group(2)}月{match.group(3)}日"
+    return ""
+
+
+def parse_analysis_report(filepath):
+    """解析供应商采购风险分析报告"""
+    filename = os.path.basename(filepath)
+    report_date = parse_report_date_from_filename(filename)
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    lines = content.split("\n")
+    result = {
+        "supplierName": "",
+        "product": None,
+        "reportDate": report_date,
+        "overallRisk": "none",
+        "summary": "",
+        "dimensions": [],
+        "keyRisks": [],
+        "sections": [],
+        "recommendations": [],
+        "sources": "",
+        "genTime": "",
     }
 
+    # 提取供应商名称（从第一行标题）
+    first_line = lines[0].strip().lstrip("#").strip() if lines else ""
+    name_match = re.search(r"^(.+?)（(.+?)）采购风险分析报告", first_line)
+    if name_match:
+        result["supplierName"] = name_match.group(1).strip()
+        result["product"] = name_match.group(2).strip()
+    else:
+        name_match = re.search(r"^(.+?)采购风险分析报告", first_line)
+        if name_match:
+            result["supplierName"] = name_match.group(1).strip()
+
+    # 如果文件名中也有供应商名，作为 fallback
+    if not result["supplierName"]:
+        fname_match = re.match(r"(.+?)_", filename)
+        if fname_match:
+            result["supplierName"] = fname_match.group(1)
+
+    # 从文件名提取产品（如果有下划线分隔）
+    if not result["product"]:
+        parts = filename.replace("采购风险分析报告", "").replace(".md", "").split("_")
+        if len(parts) >= 2:
+            result["product"] = parts[1]
+
+    # 解析报告日期（从内容中）
+    for line in lines:
+        dm = re.search(r"报告日期：(\d{4})年(\d{2})月(\d{2})日", line)
+        if dm:
+            result["reportDate"] = f"{dm.group(1)}年{dm.group(2)}月{dm.group(3)}日"
+            break
+
+    # 提取生成时间
+    for line in lines:
+        gm = re.search(r"报告生成时间：(.+)", line)
+        if gm:
+            result["genTime"] = gm.group(1).strip()
+            break
+
+    # 提取综合风险等级
+    for line in lines:
+        if "综合风险等级" in line or "风险等级" in line:
+            if "高" in line and "中" not in line and "低" not in line:
+                result["overallRisk"] = "high"
+            elif "中" in line:
+                result["overallRisk"] = "mid"
+            elif "低" in line:
+                result["overallRisk"] = "low"
+            break
+
+    # 提取总体评估（总体评估：... 段落）
+    for i, line in enumerate(lines):
+        if line.strip().startswith("总体评估："):
+            summary = line.strip().replace("总体评估：", "")
+            # 继续读后续行直到遇到空行或分隔线
+            for j in range(i + 1, min(i + 10, len(lines))):
+                if lines[j].strip() == "" or lines[j].strip().startswith("━━") or lines[j].strip().startswith("---"):
+                    break
+                summary += " " + lines[j].strip()
+            result["summary"] = summary.replace("<", "&lt;").replace(">", "&gt;")
+            break
+
+    # 解析维度表格
+    in_dim_table = False
+    dim_cols = False
+    for i, line in enumerate(lines):
+        if "| 维度优先级 | 具体维度 | 风险等级 | 说明 |" in line or "| 维度 | 风险等级 | 说明 |" in line:
+            in_dim_table = True
+            dim_cols = "| 维度 |" in line  # 三列格式
+            continue
+        if in_dim_table:
+            if line.strip().startswith("|") and "---" in line:
+                continue
+            if line.strip().startswith("|"):
+                cells = [c.strip() for c in line.strip().strip("|").split("|")]
+                if len(cells) >= 4 and not dim_cols:
+                    name = cells[1]
+                    risk_str = cells[2]
+                    desc = cells[3] if len(cells) > 3 else ""
+                elif len(cells) >= 3 and dim_cols:
+                    name = cells[0]
+                    risk_str = cells[1]
+                    desc = cells[2] if len(cells) > 2 else ""
+                else:
+                    continue
+                # 清理优先级星号
+                name = re.sub(r'^\s*⭐+\s*', '', name)
+                # 提取风险等级
+                risk = parse_report_risk(risk_str)
+                if risk != "none" or "❓" not in risk_str:
+                    result["dimensions"].append({
+                        "name": name.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"),
+                        "risk": risk,
+                        "desc": desc.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    })
+            else:
+                in_dim_table = False
+
+    # 解析关键风险点
+    in_key_risks = False
+    current_risk_title = ""
+    current_risk_detail = ""
+    for line in lines:
+        if line.strip().startswith("🔍 关键风险点") or line.strip() == "## 🔍 关键风险点":
+            in_key_risks = True
+            continue
+        if in_key_risks:
+            if line.strip().startswith("---") or line.strip().startswith("━━") or line.strip().startswith("## "):
+                if current_risk_title:
+                    result["keyRisks"].append({
+                        "title": current_risk_title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"),
+                        "detail": current_risk_detail.strip().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    })
+                    current_risk_title = ""
+                    current_risk_detail = ""
+                if line.strip().startswith("## ") and "关键风险点" not in line:
+                    in_key_risks = False
+                continue
+            # 匹配 "1、**标题**" 格式
+            title_match = re.match(r'^\d+[、\.]\s*\*\*(.+?)\*\*', line.strip())
+            if title_match:
+                if current_risk_title:
+                    result["keyRisks"].append({
+                        "title": current_risk_title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"),
+                        "detail": current_risk_detail.strip().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    })
+                current_risk_title = title_match.group(1)
+                # 标题后面的正文也在同一行
+                after = line.strip()[line.strip().index("**", line.strip().index("**") + 2) + 2:].strip()
+                current_risk_detail = after
+            elif current_risk_title:
+                current_risk_detail += " " + line.strip()
+    if current_risk_title:
+        result["keyRisks"].append({
+            "title": current_risk_title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"),
+            "detail": current_risk_detail.strip().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        })
+
+    # 解析建议措施
+    in_recs = False
+    rec_period = ""
+    for line in lines:
+        if "💡 建议措施" in line or "## ✅ 建议措施" in line or "## 💡 建议措施" in line:
+            in_recs = True
+            continue
+        if in_recs:
+            if line.strip().startswith("---") or line.strip().startswith("━━"):
+                continue
+            if line.strip().startswith("## ") and "建议" not in line:
+                in_recs = False
+                continue
+            # 匹配 "### 短期（1-3个月）" 格式
+            period_match = re.match(r'^###\s*(.+)', line.strip())
+            if period_match:
+                rec_period = period_match.group(1).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                continue
+            # 匹配建议内容
+            if rec_period and line.strip().startswith("**"):
+                rec_match = re.match(r'^\d+[、\.]\s*\*\*(.+?)\*\*[：:]?\s*(.*)', line.strip())
+                if rec_match:
+                    rec_title = rec_match.group(1)
+                    rec_detail = rec_match.group(2) if rec_match.group(2) else ""
+                    result["recommendations"].append({
+                        "period": rec_period,
+                        "content": (rec_title + "：" + rec_detail if rec_detail else rec_title).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    })
+
+    # 提取信息来源统计
+    for line in lines:
+        if "信息来源统计" in line or "本次信息来源统计" in line:
+            src_parts = []
+            for j in range(lines.index(line) + 1, min(lines.index(line) + 10, len(lines))):
+                if lines[j].strip().startswith("•") or lines[j].strip().startswith("-"):
+                    src_parts.append(lines[j].strip())
+                elif lines[j].strip() == "":
+                    break
+            result["sources"] = " ".join(src_parts).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            break
+
+    return result
+
+
+# ==================== 构建 ====================
 
 def build():
-    """构建看板 HTML"""
-    # 读取模板
     with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
         template = f.read()
 
-    # 扫描快报源目录
-    md_files = sorted(
-        glob.glob(os.path.join(REPORTS_SOURCE_DIR, "采购风险预警快报_*.md")),
-        reverse=True  # 最新的在前
+    # 1. 解析预警快报
+    alert_files = sorted(
+        glob.glob(os.path.join(ALERTS_SOURCE_DIR, "采购风险预警快报_*.md")),
+        reverse=True
     )
-
-    if not md_files:
-        print("⚠️ 未找到快报文件，生成空看板")
-
-    reports = []
-    for filepath in md_files:
-        report = parse_report(filepath)
+    alerts = []
+    for fp in alert_files:
+        report = parse_alert_file(fp)
         if report:
+            alerts.append(report)
+            print(f"  ✅ 预警快报: {os.path.basename(fp)} → {report['date']}, {len(report['suppliers'])}个供应商")
+
+    # 2. 解析采购报告
+    report_files = sorted(
+        glob.glob(os.path.join(REPORTS_SOURCE_DIR, "*采购风险分析报告*.md")),
+        reverse=True
+    )
+    reports = []
+    for fp in report_files:
+        report = parse_analysis_report(fp)
+        if report and report["supplierName"]:
             reports.append(report)
-            print(f"  ✅ 解析: {os.path.basename(filepath)} → {report['date']}, {len(report['suppliers'])}个供应商")
+            print(f"  ✅ 采购报告: {os.path.basename(fp)} → {report['supplierName']}")
 
-    # 注入数据到模板
+    # 3. 注入数据
+    alerts_json = json.dumps(alerts, ensure_ascii=False, indent=2)
     reports_json = json.dumps(reports, ensure_ascii=False, indent=2)
-    html = template.replace("__REPORTS_DATA__", reports_json)
+    html = template.replace("__ALERTS_DATA__", alerts_json)
+    html = html.replace("__REPORTS_DATA__", reports_json)
 
-    # 写入 dist
+    # 4. 写入 dist
     os.makedirs(os.path.dirname(DIST_PATH), exist_ok=True)
     with open(DIST_PATH, "w", encoding="utf-8") as f:
         f.write(html)
 
     print(f"\n🎉 构建完成: {DIST_PATH}")
-    print(f"   共 {len(reports)} 份快报")
-
+    print(f"   预警快报: {len(alerts)} 份")
+    print(f"   采购报告: {len(reports)} 份")
     return DIST_PATH
 
 
