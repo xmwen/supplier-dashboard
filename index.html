@@ -87,9 +87,9 @@
             color: var(--text);
         }
 
-        /* 内容区需要留出固定顶栏的空间 */
+        /* 内容区需要留出固定顶栏的空间 — JS 动态设置 */
         .main-content {
-            padding-top: 110px; /* header ~60px + page-nav ~50px */
+            padding-top: 0;
         }
 
         /* 页面容器 */
@@ -757,6 +757,17 @@
     }
 
     // ===== 初始化 =====
+    // 动态计算顶栏高度，避免遮挡
+    function adjustContentPadding() {
+        const topBar = document.querySelector('.top-bar');
+        const mainContent = document.querySelector('.main-content');
+        if (topBar && mainContent) {
+            mainContent.style.paddingTop = topBar.offsetHeight + 'px';
+        }
+    }
+    adjustContentPadding();
+    window.addEventListener('resize', adjustContentPadding);
+
     if (ALERTS.length > 0) {
         renderDateTabs();
         selectAlert(0);
