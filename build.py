@@ -43,11 +43,18 @@ def parse_alert_risk(text):
 def parse_alert_supplier(heading):
     heading = heading.strip()
     product = None
-    product_match = re.search(r"（产品：(.+?)）", heading)
+    product_match = re.search(r"（(.+?)）", heading)
     if product_match:
         product = product_match.group(1)
     name_match = re.search(r"\[([^\]]+)\]", heading)
-    name = name_match.group(1) if name_match else "未知供应商"
+    if name_match:
+        name = name_match.group(1)
+    else:
+        # 支持 "## 1. 村田（MLCC）" 编号格式
+        num_match = re.match(r"\d+[.、)\s]\s*(.+)", heading)
+        name = num_match.group(1).strip() if num_match else "未知供应商"
+        # 清除末尾的产品括号部分
+        name = re.sub(r"（.+?）$", "", name).strip()
     risk = parse_alert_risk(heading)
     return name, product, risk
 
@@ -65,7 +72,7 @@ def parse_alert_file(filepath):
     footer = ""
     in_footer = False
     for line in content.split("\n"):
-        if line.startswith("## ["):
+        if line.startswith("## ") and (line.startswith("## [") or re.match(r"^## \d+[.、)\s]", line)):
             if current_name:
                 suppliers.append({"name": current_name, "product": current_product, "risk": current_risk, "signals": signals.copy()})
                 signals = []
