@@ -28,13 +28,19 @@
             min-height: 100vh;
         }
 
+        /* 固定顶栏：header + page-nav 合一 */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: var(--bg);
+        }
+
         .header {
             background: linear-gradient(135deg, #1e3a5f 0%, #0f1117 100%);
-            padding: 20px 16px;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            padding: 20px 16px 14px;
         }
 
         .header h1 {
@@ -56,9 +62,6 @@
             padding: 0 16px;
             background: var(--bg);
             border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 56px;
-            z-index: 99;
         }
 
         .page-nav-btn {
@@ -84,6 +87,11 @@
             color: var(--text);
         }
 
+        /* 内容区需要留出固定顶栏的空间 */
+        .main-content {
+            padding-top: 110px; /* header ~60px + page-nav ~50px */
+        }
+
         /* 页面容器 */
         .page { display: none; }
         .page.active { display: block; }
@@ -98,9 +106,6 @@
             scrollbar-width: none;
             background: var(--bg);
             border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 56px;
-            z-index: 98;
         }
         .date-tabs::-webkit-scrollbar { display: none; }
 
@@ -143,9 +148,6 @@
             gap: 12px;
             padding: 12px 16px;
             border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 101px;
-            z-index: 97;
             background: var(--bg);
         }
 
@@ -473,8 +475,9 @@
         }
 
         @media (min-width: 768px) {
-            .header { padding: 24px 32px; }
+            .header { padding: 24px 32px 18px; }
             .header h1 { font-size: 22px; }
+            .page-nav { padding: 0 32px; }
             .date-tabs { padding: 12px 32px; }
             .report-content { padding: 20px 32px; }
             .stats-bar { padding: 12px 32px; }
@@ -485,31 +488,36 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>📋 采购风险看板</h1>
-        <div class="subtitle" id="updateTime">加载中...</div>
-    </div>
-
-    <div class="page-nav">
-        <button class="page-nav-btn active" onclick="switchPage('alerts')">⚡ 供应商采购预警</button>
-        <button class="page-nav-btn" onclick="switchPage('reports')">📊 供应商采购报告</button>
-    </div>
-
-    <!-- ===== 页面1：供应商采购预警 ===== -->
-    <div class="page active" id="page-alerts">
-        <div class="date-tabs" id="dateTabs"></div>
-        <div class="stats-bar" id="statsBar"></div>
-        <div class="report-content" id="reportContent">
-            <div class="loading">加载中...</div>
+    <!-- 固定顶栏 -->
+    <div class="top-bar">
+        <div class="header">
+            <h1>📋 采购风险看板</h1>
+            <div class="subtitle" id="updateTime">加载中...</div>
+        </div>
+        <div class="page-nav">
+            <button class="page-nav-btn active" onclick="switchPage('alerts')">⚡ 供应商采购预警</button>
+            <button class="page-nav-btn" onclick="switchPage('reports')">📊 供应商采购报告</button>
         </div>
     </div>
 
-    <!-- ===== 页面2：供应商采购报告 ===== -->
-    <div class="page" id="page-reports">
-        <!-- 报告列表 -->
-        <div class="report-list" id="reportList"></div>
-        <!-- 报告详情 -->
-        <div class="report-detail" id="reportDetail"></div>
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <!-- ===== 页面1：供应商采购预警 ===== -->
+        <div class="page active" id="page-alerts">
+            <div class="date-tabs" id="dateTabs"></div>
+            <div class="stats-bar" id="statsBar"></div>
+            <div class="report-content" id="reportContent">
+                <div class="loading">加载中...</div>
+            </div>
+        </div>
+
+        <!-- ===== 页面2：供应商采购报告 ===== -->
+        <div class="page" id="page-reports">
+            <!-- 报告列表 -->
+            <div class="report-list" id="reportList"></div>
+            <!-- 报告详情 -->
+            <div class="report-detail" id="reportDetail"></div>
+        </div>
     </div>
 
     <script>
@@ -537,6 +545,8 @@
                 renderReportList();
             }
         }
+        // 切换页面时滚动到顶部
+        window.scrollTo(0, 0);
     }
 
     // ===== 通用函数 =====
@@ -735,6 +745,8 @@
         detail.innerHTML = html;
         document.getElementById('updateTime').textContent =
             `${currentReport.supplierName} | 供应商采购报告`;
+        // 滚动到顶部
+        window.scrollTo(0, 0);
     }
 
     function closeReport() {
