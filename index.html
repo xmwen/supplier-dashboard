@@ -635,7 +635,7 @@
         if (page === 'alerts') {
             document.querySelectorAll('.page-nav-btn')[0].classList.add('active');
             document.getElementById('updateTime').textContent =
-                currentAlert ? `${currentAlert.date} | 供应商采购预警` : '供应商采购预警';
+                currentAlert ? `${currentAlert.dateLabel || currentAlert.date} | 供应商采购预警` : '供应商采购预警';
         } else {
             document.querySelectorAll('.page-nav-btn')[1].classList.add('active');
             document.getElementById('updateTime').textContent =
@@ -658,13 +658,12 @@
         return `${month}月${day}日 周${weekday}`;
     }
 
-    function getHighestRisk(report) {
-        const levels = { 'high': 3, 'mid': 2, 'low': 1, 'none': 0 };
-        let highest = 'none';
-        report.suppliers.forEach(s => {
-            if (levels[s.risk] > levels[highest]) highest = s.risk;
-        });
-        return highest;
+    function getHighestRisk(alert) {
+        const s = alert.summary || {};
+        if (s.high > 0) return 'high';
+        if (s.mid > 0) return 'mid';
+        if (s.low > 0) return 'low';
+        return 'none';
     }
 
     function getRiskColor(risk) {
@@ -687,58 +686,36 @@
     function renderDateTabs() {
         const container = document.getElementById('dateTabs');
         container.innerHTML = '';
-        ALERTS.forEach((report, idx) => {
+        ALERTS.forEach((alert, idx) => {
             const tab = document.createElement('div');
             tab.className = 'date-tab' + (idx === 0 ? ' active' : '');
-            const risk = getHighestRisk(report);
-            tab.innerHTML = formatDate(report.date) +
+            const risk = getHighestRisk(alert);
+            const label = alert.dateLabel || formatDate(alert.date);
+            tab.innerHTML = label +
                 `<span class="risk-dot" style="background:${getRiskColor(risk)}"></span>`;
             tab.onclick = () => selectAlert(idx);
             container.appendChild(tab);
         });
     }
 
-    function renderStats(report) {
+    function renderStats(alert) {
         const container = document.getElementById('statsBar');
-        const counts = { high: 0, mid: 0, low: 0, none: 0 };
-        report.suppliers.forEach(s => counts[s.risk]++);
+        const s = alert.summary || {};
         container.innerHTML = `
-            <div class="stat-item stat-high"><span class="count">${counts.high}</span>高</div>
-            <div class="stat-item stat-mid"><span class="count">${counts.mid}</span>中</div>
-            <div class="stat-item stat-low"><span class="count">${counts.low}</span>低</div>
-            <div class="stat-item stat-none"><span class="count">${counts.none}</span>无异常</div>
+            <div class="stat-item stat-high"><span class="count">${s.high || 0}</span>高</div>
+            <div class="stat-item stat-mid"><span class="count">${s.mid || 0}</span>中</div>
+            <div class="stat-item stat-low"><span class="count">${s.low || 0}</span>低</div>
+            <div class="stat-item stat-none"><span class="count">${s.none || 0}</span>无异常</div>
         `;
     }
 
-    function renderAlertContent(report) {
+    function renderAlertContent(alert) {
         const container = document.getElementById('reportContent');
-        if (!report) {
+        if (!alert) {
             container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无预警数据</div></div>`;
             return;
         }
-        let html = '';
-        report.suppliers.forEach(supplier => {
-            html += `
-            <div class="supplier-card">
-                <div class="card-header">
-                    <div>
-                        <div class="supplier-name">${supplier.name}</div>
-                        ${supplier.product ? `<div class="supplier-product">${supplier.product}</div>` : ''}
-                    </div>
-                    <span class="risk-badge ${getRiskClass(supplier.risk)}">
-                        ${getRiskEmoji(supplier.risk)} ${getRiskLabel(supplier.risk)}
-                    </span>
-                </div>
-                <div class="card-body">
-                    ${supplier.signals.length > 0
-                        ? supplier.signals.map(sig => `<div class="risk-signal">${sig}</div>`).join('')
-                        : `<div class="no-risk">该供应商今日未发现重大采购风险信号。</div>`
-                    }
-                </div>
-            </div>`;
-        });
-        html += `<div class="report-footer">${report.footer}</div>`;
-        container.innerHTML = html;
+        container.innerHTML = `<div class="report-html-body">${alert.htmlBody || ''}</div>`;
     }
 
     function selectAlert(idx) {
@@ -749,7 +726,7 @@
         renderStats(currentAlert);
         renderAlertContent(currentAlert);
         document.getElementById('updateTime').textContent =
-            `${currentAlert.date} | 供应商采购预警`;
+            `${currentAlert.dateLabel || currentAlert.date} | 供应商采购预警`;
     }
 
     // ===== 页面2：采购报告 =====
