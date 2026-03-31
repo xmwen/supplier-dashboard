@@ -8,7 +8,7 @@ import re
 import json
 import glob
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # 路径配置
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -312,7 +312,8 @@ def build():
     with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
         template = f.read()
 
-    # 1. 解析预警快报
+    # 1. 解析预警快报（只保留最近一周）
+    one_week_ago = datetime.now() - timedelta(days=7)
     alert_files = sorted(
         glob.glob(os.path.join(ALERTS_SOURCE_DIR, "采购风险预警快报_*.md")),
         reverse=True
@@ -320,21 +321,39 @@ def build():
     alerts = []
     for fp in alert_files:
         report = parse_alert_file(fp)
-        if report:
-            alerts.append(report)
-            print(f"  ✅ 预警快报: {os.path.basename(fp)} → {report['date']}, {len(report['suppliers'])}个供应商")
+        if not report:
+            continue
+        # 检查日期是否在一周内
+        try:
+            report_dt = datetime.strptime(report["date"], "%Y-%m-%d")
+            if report_dt < one_week_ago:
+                print(f"  ⏭️ 跳过过期快报: {os.path.basename(fp)} ({report['date']})")
+                continue
+        except ValueError:
+            pass
+        alerts.append(report)
+        print(f"  ✅ 预警快报: {os.path.basename(fp)} → {report['date']}, {len(report['suppliers'])}个供应商")
 
-    # 2. 解析采购报告
+    # 2. 解析采购报告（每类别只保留最新一个）
     report_files = sorted(
         glob.glob(os.path.join(REPORTS_SOURCE_DIR, "*采购风险分析报告*.md")),
         reverse=True
     )
     reports = []
+    seen_categories = set()
     for fp in report_files:
+        # 提取类别：文件名中 "_采购风险分析报告" 前的文字
+        basename = os.path.basename(fp)
+        cat_match = re.match(r"(.+?)_采购风险分析报告", basename)
+        category = cat_match.group(1) if cat_match else os.path.splitext(basename)[0]
+        if category in seen_categories:
+            print(f"  ⏭️ 跳过旧报告（类别已有更新）: {os.path.basename(fp)} [{category}]")
+            continue
         report = parse_analysis_report(fp)
         if report and report["supplierName"]:
             reports.append(report)
-            print(f"  ✅ 采购报告: {os.path.basename(fp)} → {report['supplierName']}")
+            seen_categories.add(category)
+            print(f"  ✅ 采购报告: {os.path.basename(fp)} → {report['supplierName']} [{category}]")
 
     # 3. 注入数据
     alerts_json = json.dumps(alerts, ensure_ascii=False, indent=2)
