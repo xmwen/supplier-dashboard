@@ -231,7 +231,16 @@ def parse_analysis_report(filepath):
             in_key_risks = True
             continue
         if in_key_risks:
-            if line.strip().startswith("---") or line.strip().startswith("━━") or line.strip().startswith("## "):
+            # 遇到建议措施章节，停止解析关键风险点
+            if "💡 建议措施" in line or line.strip().startswith("## 💡 建议措施") or line.strip().startswith("## ✅ 建议措施"):
+                if current_risk_title:
+                    result["keyRisks"].append({
+                        "title": current_risk_title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"),
+                        "detail": current_risk_detail.strip().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    })
+                in_key_risks = False
+                continue
+            if line.strip().startswith("---") or line.strip().startswith("━━"):
                 if current_risk_title:
                     result["keyRisks"].append({
                         "title": current_risk_title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"),
@@ -239,8 +248,16 @@ def parse_analysis_report(filepath):
                     })
                     current_risk_title = ""
                     current_risk_detail = ""
-                if line.strip().startswith("## ") and "关键风险点" not in line:
-                    in_key_risks = False
+                continue
+            if line.strip().startswith("## ") and "关键风险点" not in line:
+                if current_risk_title:
+                    result["keyRisks"].append({
+                        "title": current_risk_title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"),
+                        "detail": current_risk_detail.strip().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    })
+                    current_risk_title = ""
+                    current_risk_detail = ""
+                in_key_risks = False
                 continue
             # 匹配 "1、**标题**" 格式
             title_match = re.match(r'^\d+[、\.]\s*\*\*(.+?)\*\*', line.strip())
@@ -262,34 +279,166 @@ def parse_analysis_report(filepath):
             "detail": current_risk_detail.strip().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         })
 
+    # ── 将原始 markdown 文本转为基本 HTML ──
+    def _esc(s):
+        return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+
+    def _md_to_html(text):
+        """将 markdown 文本转为 HTML，保留 <svg> 等原始标签"""
+        if not text:
+            return ""
+        if "<svg" in text:
+            return text  # SVG 已是 HTML，直接保留
+        import re as _re
+        result_lines = []
+        in_ul = False
+        for line in text.split("\n"):
+            s = line.strip()
+            # 跳过纯分隔线
+            if _re.match(r"^[\u2501━┅─━─\u2500-]{3,}$", s) or s.startswith("━━"):
+                if in_ul:
+                    result_lines.append("</ul>")
+                    in_ul = False
+                continue
+            # 引用块
+            if s.startswith(">"):
+                c = s.lstrip(">").strip()
+                result_lines.append(f'<blockquote>{_esc(c)}</blockquote>')
+                continue
+            # 无序列表项
+            lm = _re.match(r"^[-•*]\s+(.+)", s)
+            if lm:
+                if not in_ul:
+                    result_lines.append("<ul>")
+                    in_ul = True
+                content = _process_inline(_esc(lm.group(1)))
+                result_lines.append(f"  <li>{content}</li>")
+                continue
+            if in_ul:
+                result_lines.append("</ul>")
+                in_ul = False
+            # 普通段落
+            if s:
+                result_lines.append(f"<p>{_process_inline(_esc(s))}</p>")
+        if in_ul:
+            result_lines.append("</ul>")
+        return "\n".join(result_lines)
+
+    def _process_inline(text):
+        import re as _re
+        text = _re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
+        text = _re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
+        return text
+
+    # 解析详细分析章节（不含建议措施）
+    in_section = False
+    current_section_title = ""
+    current_section_lines = []
+    rec_keywords = ("短期", "中期", "长期")
+    for i, line in enumerate(lines):
+        ls = line.strip().rstrip("\r")
+        m = re.match(r"^####\s+(.+)", ls)
+        if m:
+            header = m.group(1).strip()
+            # 遇到建议措施的周期标题时停止 sections 解析
+            if header.startswith(rec_keywords):
+                if current_section_title:
+                    raw = "\n".join(current_section_lines)
+                    if raw.strip():
+                        result["sections"].append({
+                            "title": _esc(current_section_title),
+                            "content": "",
+                            "html": _md_to_html(raw)
+                        })
+                break
+            # 如果当前已有 section 且遇到新标题，先保存旧的再开始新的
+            # "图" 开头的标题（如 "图1：近3年营收"）视为独立图表 section
+            # 其他子标题（如 "①公司财务状况"）也各自创建独立 section
+            if current_section_title:
+                raw = "\n".join(current_section_lines)
+                if raw.strip():
+                    result["sections"].append({
+                        "title": _esc(current_section_title),
+                        "content": "",
+                        "html": _md_to_html(raw)
+                    })
+            current_section_title = header
+            current_section_lines = []
+            in_section = True
+        elif in_section:
+            if re.match(r"^[\u2501━┅─━─\u2500-]{3,}$", ls) or ls.startswith("━━") or ls.startswith("━━━"):
+                # 保存当前 section
+                if current_section_title:
+                    raw = "\n".join(current_section_lines)
+                    if raw.strip():
+                        result["sections"].append({
+                            "title": _esc(current_section_title),
+                            "content": "",
+                            "html": _md_to_html(raw)
+                        })
+                # 只有遇到明确的章节结束标记才退出：separator 后紧跟建议措施章节
+                # 向前看一行判断是否是章节结束
+                next_idx = i + 1
+                next_line = lines[next_idx].strip().rstrip("\r") if next_idx < len(lines) else ""
+                if next_line.startswith(rec_keywords) or "💡 建议措施" in next_line:
+                    break
+                # 否则继续（这可能是章节内的分隔线），清空并保持 in_section
+                current_section_title = ""
+                current_section_lines = []
+                in_section = False
+            else:
+                current_section_lines.append(line)
+
     # 解析建议措施
     in_recs = False
-    rec_period = ""
+    rec_period = ""   # 当前周期标题
+    pending_recs = []  # 当前周期内累积的建议项
     for line in lines:
-        if "💡 建议措施" in line or "## ✅ 建议措施" in line or "## 💡 建议措施" in line:
+        ls = line.strip().rstrip("\r")
+        if "💡 建议措施" in ls:
             in_recs = True
             continue
         if in_recs:
-            if line.strip().startswith("---") or line.strip().startswith("━━"):
+            if ls.startswith("---") or ls.startswith("━━"):
+                # 分隔线：先将 pending 合并到结果（因为后面会换 period）
+                if pending_recs:
+                    result["recommendations"].extend(pending_recs)
+                    pending_recs = []
+                rec_period = ""
                 continue
-            if line.strip().startswith("## ") and "建议" not in line:
+            if ls.startswith("## ") and "建议" not in ls:
+                # 建议措施章节结束：保存 pending
+                if pending_recs:
+                    result["recommendations"].extend(pending_recs)
+                    pending_recs = []
                 in_recs = False
                 continue
-            # 匹配 "### 短期（1-3个月）" 格式
-            period_match = re.match(r'^###\s*(.+)', line.strip())
-            if period_match:
-                rec_period = period_match.group(1).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            # 匹配建议周期标题（### 或 #### 格式）
+            pm = re.match(r"^#{3,4}\s+(.+)", ls)
+            if pm:
+                # 换新周期前，保存旧周期内的建议
+                if pending_recs:
+                    result["recommendations"].extend(pending_recs)
+                    pending_recs = []
+                rec_period = _esc(pm.group(1).strip())
                 continue
             # 匹配建议内容
-            if rec_period and line.strip().startswith("**"):
-                rec_match = re.match(r'^\d+[、\.]\s*\*\*(.+?)\*\*[：:]?\s*(.*)', line.strip())
-                if rec_match:
-                    rec_title = rec_match.group(1)
-                    rec_detail = rec_match.group(2) if rec_match.group(2) else ""
-                    result["recommendations"].append({
-                        "period": rec_period,
-                        "content": (rec_title + "：" + rec_detail if rec_detail else rec_title).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-                    })
+            rm = re.match(r"^\d+[、\.]\s*\*\*(.+?)\*\*[：:：]?\s*(.*)", ls)
+            if rm and rec_period:
+                title = rm.group(1)
+                detail = rm.group(2).strip() if rm.group(2) else ""
+                pending_recs.append({
+                    "period": rec_period,
+                    "content": _esc(title + ("：" + detail if detail else ""))
+                })
+                continue
+            # 续行：累加到当前建议的 content（如来源注释）
+            if rec_period and pending_recs and ls:
+                last = pending_recs[-1]
+                last["content"] += " " + _esc(ls)
+    # 循环结束后保存最后的 pending
+    if pending_recs:
+        result["recommendations"].extend(pending_recs)
 
     # 提取信息来源统计
     for line in lines:
