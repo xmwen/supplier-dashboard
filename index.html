@@ -628,9 +628,8 @@
     function renderDateTabs() {
         const container = document.getElementById('dateTabs');
         container.innerHTML = '';
-        // 按日期倒序排列（最新在前）
-        const sorted = [...ALERTS].reverse();
-        ALERTS = sorted;
+        // 按日期正序排列（时间早的在前）
+        ALERTS.sort((a, b) => a.date.localeCompare(b.date));
         ALERTS.forEach((alert, idx) => {
             const tab = document.createElement('div');
             tab.className = 'date-tab' + (idx === 0 ? ' active' : '');
