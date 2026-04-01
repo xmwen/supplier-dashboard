@@ -1,11 +1,5 @@
 {
   "date": "2026-03-31",
   "dateLabel": "2026年3月31日",
-  "summary": {
-    "high": 0,
-    "mid": 1,
-    "low": 1,
-    "none": 1
-  },
   "file": "alerts/2026-03-31.html"
 }
