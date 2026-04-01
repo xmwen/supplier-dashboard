@@ -628,8 +628,8 @@
     function renderDateTabs() {
         const container = document.getElementById('dateTabs');
         container.innerHTML = '';
-        // 按日期正序排列（时间早的在前）
-        ALERTS.sort((a, b) => a.date.localeCompare(b.date));
+        // 按日期倒序排列（最新的在最左边）
+        ALERTS.sort((a, b) => b.date.localeCompare(a.date));
         ALERTS.forEach((alert, idx) => {
             const tab = document.createElement('div');
             tab.className = 'date-tab' + (idx === 0 ? ' active' : '');
@@ -671,10 +671,14 @@
             container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无采购报告</div></div>`;
             return;
         }
+        // 按报告日期倒序排列（最新的在最上面）
+        const sorted = [...REPORTS].sort((a, b) => b.reportDate.localeCompare(a.reportDate));
         let html = '';
-        REPORTS.forEach((report, idx) => {
+        sorted.forEach((report, idx) => {
+            // 找到原始 REPORTS 中的索引
+            const origIdx = REPORTS.indexOf(report);
             html += `
-            <div class="report-list-card" onclick="openReport(${idx})">
+            <div class="report-list-card" onclick="openReport(${origIdx})">
                 <div class="name">${report.supplierName}${report.product ? `（${report.product}）` : ''}</div>
                 <div class="meta">
                     <span>${report.reportDate}</span>
