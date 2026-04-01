@@ -1,0 +1,11 @@
+{
+  "date": "2026-04-01",
+  "dateLabel": "2026年4月1日",
+  "summary": {
+    "high": 1,
+    "mid": 2,
+    "low": 1,
+    "none": 5
+  },
+  "file": "alerts/2026-04-01.html"
+}

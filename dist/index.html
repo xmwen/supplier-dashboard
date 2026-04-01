@@ -620,52 +620,29 @@
     </div>
 
     <script>
-    // 数据 - 由构建脚本生成
-    const ALERTS = [
-  {
-    "date": "2026-03-31",
-    "dateLabel": "2026年3月31日",
-    "htmlBody": "<h1 id=\"-2026-03-31\">采购风险预警快报 - 2026-03-31</h1>\n<h2 id=\"mlcc-\">[村田]（产品：MLCC）- [🟢 低风险]</h2>\n<ul>\n<li>example</li>\n</ul>\n<hr />\n<h2 id=\"-\">[台积电] - [🚫 无异常]</h2>\n<ul>\n<li>example</li>\n</ul>\n<hr />\n<h2 id=\"maruwa-\">[Maruwa]（产品：陶瓷基板）- [🟡 中风险]</h2>\n<ul>\n<li>example</li>\n</ul>\n<hr />\n<p>报告生成时间：2026-03-31 08:32\n监控供应商数：3 | 发现风险信号：1（高0/中1/低0）</p>",
-    "summary": {
-      "high": 0,
-      "mid": 1,
-      "low": 1,
-      "none": 1
-    }
-  },
-  {
-    "date": "2026-04-01",
-    "dateLabel": "2026年4月1日",
-    "htmlBody": "<h1 id=\"_1\">采购风险预警日报</h1>\n<p><strong>日期</strong>：2026年4月1日\n<strong>监控供应商数</strong>：9家\n<strong>生成时间</strong>：2026-04-01 20:30</p>\n<hr />\n<h2 id=\"_2\">统计</h2>\n<table>\n<thead>\n<tr>\n<th>指标</th>\n<th>数值</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>监控总数</td>\n<td>9家</td>\n</tr>\n<tr>\n<td>🔴 高风险</td>\n<td>1家（村田）</td>\n</tr>\n<tr>\n<td>🟡 中风险</td>\n<td>2家（英伟达、ROHM）</td>\n</tr>\n<tr>\n<td>🟢 低风险</td>\n<td>1家（古河电工）</td>\n</tr>\n<tr>\n<td>无异常</td>\n<td>5家</td>\n</tr>\n</tbody>\n</table>\n<hr />\n<h2 id=\"_3\">重要动态</h2>\n<h3 id=\"mlcc\">村田（MLCC）</h3>\n<ul>\n<li>村田2026年Q1高阶MLCC订单量季增20%—25%，产线持续满载，因掌握先进封装关键料源在实体AI元年中处于核心地位。（来源：电子工程专辑，2026-03-31）</li>\n<li>三星电机已宣布自4月起全线MLCC产品涨价10%—20%，行业涨价潮扩大。（来源：东方财富，2026-03-31）</li>\n<li>村田于3月31日发布人事异动及机构改革公告，涉及子公司Philippine Manufacturing Co. of Murata等关联企业，具体变动细节未公开。（来源：村田制作所官网，2026-03-31）</li>\n</ul>\n<h3 id=\"_4\">台积电</h3>\n<ul>\n<li>TSMC COUPE硅光子平台计划2026年投入量产，基于CoWoS共封装光学集成，宣称可实现5—10倍能效提升和10—20倍延迟降低，具备先发优势。（来源：TrendForce，2026-04-01）</li>\n<li>全球代工市场2025年达创纪录3200亿美元，AI需求为主要推动力，TSMC在\"代工2.0\"生态中扮演关键角色。（来源：Digitimes，2026-03-31）</li>\n<li>三星电子计划2030年前推出1纳米工艺并采用新chiplet技术，直接挑战TSMC先进制程领导地位。（来源：Digitimes，2026-03-31）</li>\n</ul>\n<h3 id=\"hbm\">三星（HBM）</h3>\n<ul>\n<li>三星HBM良率突破80%，结束了SK海力士在HBM市场的垄断地位，全球科技巨头已开始排队下单，三星在英伟达供应链中的份额预计显著提升。（来源：The Daily Money，2026-04-01）</li>\n<li>三星Q1 HBM营收同比暴增超300%，从约1万亿韩元突破至3万亿韩元以上，主因向英伟达HBM3E供应量大幅增加及全球首发HBM4出货。Q1营业利润预计首破40万亿韩元（创韩企纪录）。三星计划将HBM总产量提升三倍，超半数产能分配给HBM4。（来源：首尔经济日报，2026-03-31）</li>\n</ul>\n<h3 id=\"_5\">古河电工（光纤）</h3>\n<ul>\n<li>古河電気工業新设光电子融合器件事業部副總經理（大橋浩美）及中部日本・西日本分區總經理，组织调整规模较大。（来源：MarketScreener，2026-03-05公告，2026-04-01生效）</li>\n</ul>\n<h3 id=\"mlcc_1\">太阳诱电（MLCC）</h3>\n<ul>\n<li>太阳诱电发布董事人事内定通知：审计与监督委员会委员本田俊光将于6月卸任，由高级执行董事藤川巖接任，其余5名董事连任。变更需6月下旬股东大会批准。（来源：TDnet，2026-03-31）</li>\n</ul>\n<h3 id=\"_6\">英伟达</h3>\n<ul>\n<li>英伟达宣布20亿美元战略投资Marvell Technology（获得约2.5%股权），双方围绕NVLink Fusion平台展开战略合作，整合Marvell定制AI芯片和先进光互连技术与英伟达Grace Blackwell和Vera Rubin系统。此举回应大客户自研芯片趋势，合作消息公布当日英伟达股价涨5.6%。（来源：CNBC，2026-03-31）</li>\n<li>众议院外交事务委员会推进《芯片安全法案》，要求为出口先进芯片建立基于位置验证的\"芯片安全机制\"。（来源：Washington Trade &amp; Tariff Letter，2026-03-31）</li>\n</ul>\n<h3 id=\"rohm\">ROHM</h3>\n<ul>\n<li>ROHM于3月31日发布新款CMOS运算放大器TLRx728和BD728x系列共17款产品，全系列符合车规AEC-Q100，覆盖车载、工业和消费电子。（来源：ROHM官网，2026-03-31）</li>\n<li>电装社长4月1日表示收购ROHM将产生\"巨大协同效应\"，双方存在\"技术亲和力\"。电装同日发布2030财年中期计划，目标8万亿日元销售额和10%营业利润率，计划将车载芯片技术拓展至工业和消费设备领域。（来源：Nippon.com，2026-04-01）</li>\n</ul>\n<h3 id=\"hdd\">东芝（HDD）</h3>\n<ul>\n<li>东芝电子元件及存储株式会社推出M12系列3.5英寸近线HDD，容量30—34TB（SMR），采用11碟片玻璃基板FC-MAMR™技术氦气密封，最高传输速率282MiB/s（较上代提升约8%），每TB功耗降低约18%。SMR型号已开始样品出货，28TB CMR型号计划2026年Q3提供样品。（来源：东芝官网，2026-03-31）</li>\n</ul>\n<hr />\n<h2 id=\"_7\">风险预警</h2>\n<h3 id=\"mlcc_2\">村田（MLCC） — 🔴高风险</h3>\n<ul>\n<li>村田MLCC涨价今日（2026-04-01）正式生效，近三年来首次大规模调价，覆盖多层芯片铁氧体磁珠、多层铁氧体功率电感、多层射频电感、多层共模扼流圈四大品类，涨价驱动因素为银价飙升及AI需求爆发。（来源：TrendForce，2026-03-17）</li>\n<li>MLCC全球供需严重失衡，村田高端MLCC订单量达当前产能的2倍，AI服务器和高端车规级MLCC涨价15%—35%，初期对分销商涨价，后续对长单大客户一对一谈判。（来源：东方财富，2026-03-31）</li>\n</ul>\n<h3 id=\"_8\">英伟达 — 🟡中风险</h3>\n<ul>\n<li>美国国会推动芯片管制升级，参议员致信商务部要求暂停向中国及东南亚国家（马来西亚、泰国、越南、新加坡）发放先进AI芯片出口许可，引用\"大规模中转\"风险。管制关注点已从终端产品出口延伸至供应链上游和第三国中转路线，可能影响全球GPU供应分配格局。（来源：Washington Trade &amp; Tariff Letter，2026-03-31）</li>\n<li>三名嫌疑人涉嫌通过泰国空壳公司向中国走私英伟达H100/H200芯片（约2.32亿美元），事件引发出口许可证收紧压力，参议员呼吁暂停向亚洲市场出口先进AI芯片的许可证。（来源：Information Age，2026-03-31）</li>\n</ul>\n<h3 id=\"rohm_1\">ROHM — 🟡中风险</h3>\n<ul>\n<li>电装宣布收购ROHM提案（约83亿美元），ROHM目前面临三条战略路径选择（独立发展、与电装深化合作、与东芝/三菱电机横向整合），已成立特别委员会评估所有选项，最终决策尚未做出。若收购落地，公司治理结构和供应链管理可能发生重大调整，存在采购方对接关系变化风险。（来源：Nippon.com，2026-04-01；FP Trendy，2026-04-01）</li>\n<li>ROHM同时参与与东芝、三菱电机三方功率半导体合资谈判，若三方整合落地将形成仅次于英飞凌的全球第二大功率芯片供应商，行业格局将发生根本性变化。目前仍处于讨论阶段，非最终协议。（来源：EE Times，2026-03-31）</li>\n</ul>\n<h3 id=\"_9\">古河电工（光纤） — 🟢低风险</h3>\n<ul>\n<li>古河電気工業4月1日实施大规模组织架构调整，废除光解决方案事业部改组为「光解决方案领域」，新设CPO、CSCO、CHRO等高管职位，光纤相关业务架构变动较大，短期内可能影响供应链对接效率。（来源：MarketScreener，2026-03-05公告，2026-04-01生效）</li>\n</ul>",
-    "summary": {
-      "high": 1,
-      "mid": 2,
-      "low": 1,
-      "none": 5
-    }
-  }
-];
-    const REPORTS = [
-  {
-    "supplierName": "古河电工",
-    "product": "光纤",
-    "reportDate": "2026年3月29日",
-    "overallRisk": "high",
-    "summary": "总体评估：古河电工作为全球第二大光纤光缆供应商（份额11.3%），正处于业务扩张的高景气周期——Q3累计营收同比增长7.6%、全年业绩预测上修、宣布最高3000亿日元产能投资计划、13824心超多心光纤电缆量产且产能翻倍。然而，全球光纤行业正经历严重供应短缺，带状光纤交货期已超过60周，标准光纤价格一个月内飙升超75%，供需缺口接近1亿核心公里/年，核心瓶颈光棒产能扩建需1.5-2年。从采购方视角看，当前面临「交期极长、价格飙升、产能被预订完毕」的三重压力，短期拿货难度极大，成本显著上升。**红线触发：核心产品交期超过60周，远超行业正常标准（通常4-8周）。**",
-    "htmlBody": "<p>古河电工采购风险分析报告\n报告日期：2026年3月29日\n分析师：采购专家团</p>\n<p>📊 风险等级：🔴高\n总体评估：古河电工作为全球第二大光纤光缆供应商（份额11.3%），正处于业务扩张的高景气周期——Q3累计营收同比增长7.6%、全年业绩预测上修、宣布最高3000亿日元产能投资计划、13824心超多心光纤电缆量产且产能翻倍。然而，全球光纤行业正经历严重供应短缺，带状光纤交货期已超过60周，标准光纤价格一个月内飙升超75%，供需缺口接近1亿核心公里/年，核心瓶颈光棒产能扩建需1.5-2年。从采购方视角看，当前面临「交期极长、价格飙升、产能被预订完毕」的三重压力，短期拿货难度极大，成本显著上升。<strong>红线触发：核心产品交期超过60周，远超行业正常标准（通常4-8周）。</strong></p>\n<p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>\n<p>📌 各维度风险汇总</p>\n<table>\n<thead>\n<tr>\n<th>维度优先级</th>\n<th>具体维度</th>\n<th>风险等级</th>\n<th>说明</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>🔴高优先级</td>\n<td>①公司财务状况</td>\n<td>🟢低</td>\n<td>Q3累计营收+7.6%、营业利润+11.9%，全年预测上修，财务基本面稳健</td>\n</tr>\n<tr>\n<td>🔴高优先级</td>\n<td>②产能供应</td>\n<td>🟡中</td>\n<td>三重/枥木工厂投产产能翻倍，3000亿日元投资计划扩产至3倍，但短期内产能仍被大量预订</td>\n</tr>\n<tr>\n<td>🔴高优先级</td>\n<td>③供应链问题</td>\n<td>🔴高</td>\n<td>带状光纤交期超60周，G657A2缺货，价格月涨75%+，核心瓶颈光棒产能不足</td>\n</tr>\n<tr>\n<td>🔴高优先级</td>\n<td>④竞争格局</td>\n<td>🟢低</td>\n<td>全球第2（11.3%），技术领先（13824心量产），竞品康宁/富士通同步扩张</td>\n</tr>\n<tr>\n<td>🔴高优先级</td>\n<td>⑤行业趋势</td>\n<td>🟡中</td>\n<td>数据中心需求年增75.9%，供需缺口1亿核心公里/年，光纤进入卖方市场</td>\n</tr>\n<tr>\n<td>🔴高优先级</td>\n<td>⑥上下游动态</td>\n<td>🟡中</td>\n<td>上游光棒满负荷+扩产周期长，下游AI数据中心需求爆发，Lightera品牌整合强化全球运营</td>\n</tr>\n<tr>\n<td>🟡中优先级</td>\n<td>⑦政策与合规</td>\n<td>❓ 信息不足</td>\n<td>未检索到出口管制、关税等政策变化信息</td>\n</tr>\n<tr>\n<td>🟡中优先级</td>\n<td>⑧技术路线</td>\n<td>🟢低</td>\n<td>CPO/光电融合技术领先，全球首款100mW×16通道ELS，深度参与NTT IOWN项目</td>\n</tr>\n<tr>\n<td>🟡中优先级</td>\n<td>⑨客户变化</td>\n<td>❓ 信息不足</td>\n<td>未检索到具体客户流失或新增信息（已知Meta与康宁签订60亿美元合同）</td>\n</tr>\n<tr>\n<td>🟡中优先级</td>\n<td>⑩区域风险</td>\n<td>🟢低</td>\n<td>日美两地扩产，未发现自然灾害或政治风险；关联公司债权放弃影响有限</td>\n</tr>\n<tr>\n<td>🟢低优先级</td>\n<td>⑪重大合作</td>\n<td>🟢低</td>\n<td>日美战略投资备忘录、NTT IOWN合作、收购Hakusan扩展连接器业务</td>\n</tr>\n<tr>\n<td>🟢低优先级</td>\n<td>⑫人才与组织</td>\n<td>🟢低</td>\n<td>Lightera品牌整合顺利，CATV业务重组，管理层变动细节有限但无负面影响</td>\n</tr>\n<tr>\n<td>🟢低优先级</td>\n<td>⑬财务健康度</td>\n<td>🟢低</td>\n<td>信用倍数2.76倍、ROE 9.97%、市值2.17万亿日元，财务状况健康</td>\n</tr>\n<tr>\n<td>🟢低优先级</td>\n<td>⑭专利与知识产权</td>\n<td>❓ 信息不足</td>\n<td>未检索到专利诉讼或IP纠纷信息</td>\n</tr>\n<tr>\n<td>🟢低优先级</td>\n<td>⑮定价与汇率</td>\n<td>🔴高</td>\n<td>光纤价格月涨75%+，G652.D达7年新高，市场进入\"一天一价\"模式；日元贬值利好出口</td>\n</tr>\n</tbody>\n</table>\n<p>🔍 关键风险点</p>\n<p>1、<strong>光纤交期严重超标，供应紧张</strong>\n带状光纤交货期已超过60周，部分厂商2026年产能已被预订完毕。G657A2（数据中心用特种光纤）出现结构性缺货，核心瓶颈为光棒（光学预制棒）产能不足，扩建周期需1.5-2年。[来源：GL FIBER，2026年2月；JapanTalkback/kantenna.com，2026年3月；Emtelle官网，2026年1月]</p>\n<p>2、<strong>光纤价格剧烈上涨</strong>\nG.652.D标准光纤价格在一个月内上涨超75%，达到40-50元/核心公里（7年新高）；G657A2达60-70元/核心公里。中国市场标准单模光纤从2025年底约20元涨至2026年初35元以上，报价有效期仅24小时。[来源：GL FIBER，2026年2月]</p>\n<p>3、<strong>竞品锁定长期合同，议价空间收窄</strong>\nMeta与康宁签订高达60亿美元AI数据中心光纤供应合同，中国移动等运营商招标中厂商按最高限价报价，\"价格战\"时代结束。行业采购模式从\"按需采购\"转向长期协议锁定，采购方议价能力显著削弱。[来源：JapanTalkback/kantenna.com，2026年3月；GL FIBER，2026年2月]</p>\n<p>4、<strong>3000亿日元投资计划的中长期不确定性</strong>\n虽然宣布最多3000亿日元的扩产计划，但具体投资内容、时间表和产能释放节奏尚未披露，且对当期盈利预测无影响。产能提升至3倍的目标需要数年才能实现，短期供应紧张难以缓解。[来源：Japan IR，2026年3月]</p>\n<p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>\n<p>📈 详细风险分析</p>\n<h4 id=\"_1\">行业整体态势</h4>\n<p>⚠️ 风险：- 全球光纤市场正在从2023-2024年的库存调整期快速转向供不应求。2025年数据中心光纤需求同比增长75.9%，预计2027年数据中心将占全球光纤需求的30%，仅美国到2029年预计需新增2.133亿光纤英里。[来源：JapanTalkback/kantenna.com，2026年3月]</p>"
-  },
-  {
-    "supplierName": "村田",
-    "product": "MLCC",
-    "reportDate": "2026年03月31日",
-    "overallRisk": "mid",
-    "summary": "总体评估：村田MLCC业务受益于AI服务器需求爆发，高端产品供不应求，财务基本面稳健（FY2026营收予想1.8万亿日元），但面临涨价15%-35%带来的采购成本上升风险、交期从4周大幅延长至20周的供应紧张风险、以及IT环境数据泄露事件的不确定性。涨价已形成行业性趋势（三星电机同步涨价），短期内采购方议价能力显著减弱。",
-    "htmlBody": "<p>村田制作所（MLCC）采购风险分析报告\n报告日期：2026年03月31日\n分析师：采购专家团</p>\n<p>📊 风险等级：🟡中\n总体评估：村田MLCC业务受益于AI服务器需求爆发，高端产品供不应求，财务基本面稳健（FY2026营收予想1.8万亿日元），但面临涨价15%-35%带来的采购成本上升风险、交期从4周大幅延长至20周的供应紧张风险、以及IT环境数据泄露事件的不确定性。涨价已形成行业性趋势（三星电机同步涨价），短期内采购方议价能力显著减弱。</p>\n<p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>\n<p>📌 各维度风险汇总</p>\n<table>\n<thead>\n<tr>\n<th>维度优先级</th>\n<th>具体维度</th>\n<th>风险等级</th>\n<th>说明</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>⭐⭐⭐</td>\n<td>①公司财务状况</td>\n<td>🟡中</td>\n<td>FY2026 Q3营业利润受SAW减损拖累同比-13.3%，但FY2025全年增收增益，通期予想1.8万亿日元</td>\n</tr>\n<tr>\n<td>⭐⭐⭐</td>\n<td>②产能供应</td>\n<td>🔴高</td>\n<td>高端MLCC稼动率95%、询单量是产能2倍、交期4周→20周，供需严重失衡</td>\n</tr>\n<tr>\n<td>⭐⭐⭐</td>\n<td>③供应链问题</td>\n<td>🟡中</td>\n<td>涨价15%-35%4月1日生效、IT环境数据泄露事件调查中、银等原材料成本上涨</td>\n</tr>\n<tr>\n<td>⭐⭐⭐</td>\n<td>④竞争格局</td>\n<td>🟡中</td>\n<td>村田+三星电机垄断高端市场（合计市占率约55%），寡头格局限制采购方替代选择</td>\n</tr>\n<tr>\n<td>⭐⭐⭐</td>\n<td>⑤行业趋势</td>\n<td>🔴高</td>\n<td>AI服务器驱动MLCC\"超级周期\"，TrendForce判断\"AI热、消费冷\"，结构性涨价可能持续3-5年</td>\n</tr>\n<tr>\n<td>⭐⭐⭐</td>\n<td>⑥上下游动态</td>\n<td>🟡中</td>\n<td>上游钛酸钡供应紧张+银价上涨推高成本，下游AI服务器MLCC需求2030年前增长3.3倍</td>\n</tr>\n<tr>\n<td>⭐⭐</td>\n<td>⑦政策与合规</td>\n<td>❓</td>\n<td>信息不足——未检索到出口管制、关税变化等政策性信息</td>\n</tr>\n<tr>\n<td>⭐⭐</td>\n<td>⑧技术路线</td>\n<td>🟢低</td>\n<td>ULTICIRC基板量产化、TSN over 5G实证成功、电源模块新业务拓展，技术竞争力增强</td>\n</tr>\n<tr>\n<td>⭐⭐</td>\n<td>⑨客户变化</td>\n<td>❓</td>\n<td>部分覆盖——分部营收显示AI/汽车/通信占比，但无具体客户名称及订单变化信息</td>\n</tr>\n<tr>\n<td>⭐⭐</td>\n<td>⑩区域风险</td>\n<td>🟡中</td>\n<td>IT环境不正访问事件（3/6发现）调查中，影响范围未公布；产能集中于日本、菲律宾</td>\n</tr>\n<tr>\n<td>⭐</td>\n<td>⑪重大合作</td>\n<td>🟢低</td>\n<td>子公司合并（富山+氷见）、微型电池事业转让至Maxell，运营效率优化</td>\n</tr>\n<tr>\n<td>⭐</td>\n<td>⑮定价与汇率</td>\n<td>🔴高</td>\n<td>MLCC涨价15%-35%（4/1生效），三星电机先行涨价超20%，现货价已涨近20%</td>\n</tr>\n</tbody>\n</table>\n<p>🔍 关键风险点</p>\n<p>1、<strong>高端MLCC交期大幅延长，供应严重紧张</strong>\n   村田高端MLCC产线稼动率已达95%，询单量是产能的2倍，交期从4周大幅延长至20周。[来源：新浪财经/搜狐科技，2026年3月]；三星电机同步满载，行业整体高端产能不足。[来源：新浪财经/财联社，2026年2月] 采购方面临断供和交付延迟的双重风险。</p>\n<p>2、<strong>MLCC大规模涨价，采购成本显著上升</strong>\n   村田3月17日发布涨价函，AI服务器专用高容MLCC、高端车规级MLCC、射频微波MLCC涨价15%-35%，4月1日生效。[来源：腾讯新闻/证券时报，2026年3月17日] 三星电机2月已先行涨价超20%。[来源：新浪财经/搜狐科技，2026年3月] 中金等机构判断本轮为3-5年结构性涨价周期。[来源：新浪财经/搜狐科技，2026年3月]</p>\n<p>3、<strong>IT环境数据泄露事件，影响范围未明</strong>\n   村田2月28日发现IT环境存在不正访问可能，3月1日启动全面调查，确认社外关系者信息和社内信息可能被不正取得。[来源：村田官网，2026年3月6日] 危机对策本部已设立，与外部网络安全专门机构合作，但具体数据种类和规模尚未公布。若涉及客户敏感信息，可能导致交付延迟或信任危机。</p>\n<p>4、<strong>SAW滤波器商誉减损持续拖累利润</strong>\n   FY2026 Q3累计营业利润同比下降13.3%，表面波滤波器事业商誉减损损失437.98亿日元为主要原因。[来源：Gyokai Digest，2026年2月26日] 器件/模块部门录得营业赤字261亿日元。虽不直接影响MLCC供应，但反映公司在通信模块领域面临结构性挑战。</p>\n<p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>\n<p>📈 详细风险分析</p>\n<h4 id=\"_1\">行业整体态势</h4>\n<p>⚠️ 风险：• MLCC行业进入AI驱动的\"超级周期\"——高端MLCC因AI服务器（GB300平台单机约3万颗，Blackwell芯片需求为前代10倍）需求爆发，供需严重失衡。[来源：新浪财经/搜狐科技，2026年3月] TrendForce判断2026Q1全球MLCC呈\"AI热、消费冷\"格局，中低端消费电子MLCC仍疲软但高端产品结构性短缺。[来源：新浪财经/财联社，2026年2月] 村田中岛社长预测AI需求扩张周期可持续3年。[来源：EE Times Japan，2026年2月27日] 行业第一梯队（日韩）持续将产能转向高附加值产品、退出中低端，结构性供需矛盾短期内难以缓解，采购方将面临持续的涨价和交期延长压力。</p>\n<h4 id=\"_2\">竞品动态分析</h4>\n<p>⚠️ 风险：• <strong>三星电机（Samsung Electro-Mechanics）</strong>：天津厂月产能1,200亿颗MLCC满载运行（菲律宾500亿颗、韩国100亿颗），2月已先行涨价超20%。[来源：新浪财经/财联社，2026年2月] 菲律宾新工厂计划将进一步扩大产能。• <strong>太阳诱电（Taiyo Yuden）</strong>：知识库记录显示FY2027扩产计划执行中。[来源：知识库事件00000008] • <strong>TDK</strong>：市占率约20%，作为村田主要竞争对手。[来源：AInvest/CHOSUNBIZ，2025年] • <strong>整体评估</strong>：日韩厂商垄断高端MLCC市场（村田约40%+三星约15%+TDK约20%），寡头格局下采购方替代选择极为有限。中国厂商（风华高科、三环集团）主要覆盖中大尺寸中低端，短期内无法替代高端产品。</p>"
-  }
-];
-
+    // 数据 - 通过 fetch 异步加载 index.json
+    let ALERTS = [];
+    let REPORTS = [];
     let currentAlert = null;
     let currentReport = null;
+
+    // ===== 数据加载 =====
+    async function loadData() {
+        try {
+            const resp = await fetch('index.json');
+            const data = await resp.json();
+            ALERTS = data.alerts || [];
+            REPORTS = data.reports || [];
+            if (data.updatedAt) {
+                document.getElementById('updateTime').textContent = '更新于 ' + data.updatedAt;
+            }
+            initUI();
+        } catch (e) {
+            document.getElementById('reportContent').innerHTML =
+                `<div class="empty-state"><div class="icon">⚠️</div><div class="text">数据加载失败</div></div>`;
+            console.error('Failed to load index.json:', e);
+        }
+    }
 
     // ===== 页面切换 =====
     function switchPage(page) {
@@ -684,7 +661,6 @@
                 renderReportList();
             }
         }
-        // 切换页面时滚动到顶部
         window.scrollTo(0, 0);
     }
 
@@ -726,6 +702,9 @@
     function renderDateTabs() {
         const container = document.getElementById('dateTabs');
         container.innerHTML = '';
+        // 按日期倒序排列（最新在前）
+        const sorted = [...ALERTS].reverse();
+        ALERTS = sorted;
         ALERTS.forEach((alert, idx) => {
             const tab = document.createElement('div');
             tab.className = 'date-tab' + (idx === 0 ? ' active' : '');
@@ -749,22 +728,27 @@
         `;
     }
 
-    function renderAlertContent(alert) {
-        const container = document.getElementById('reportContent');
-        if (!alert) {
-            container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无预警数据</div></div>`;
-            return;
-        }
-        container.innerHTML = `<div class="report-html-body">${alert.htmlBody || ''}</div>`;
-    }
-
     function selectAlert(idx) {
         currentAlert = ALERTS[idx];
         document.querySelectorAll('.date-tab').forEach((tab, i) => {
             tab.classList.toggle('active', i === idx);
         });
         renderStats(currentAlert);
-        renderAlertContent(currentAlert);
+        // 通过 fetch 加载对应的 HTML 文件
+        const container = document.getElementById('reportContent');
+        if (!currentAlert.file) {
+            container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无内容</div></div>`;
+            return;
+        }
+        container.innerHTML = `<div class="loading">加载中...</div>`;
+        fetch(currentAlert.file)
+            .then(r => r.text())
+            .then(html => {
+                container.innerHTML = `<div class="report-html-body">${html}</div>`;
+            })
+            .catch(() => {
+                container.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><div class="text">内容加载失败</div></div>`;
+            });
         document.getElementById('updateTime').textContent =
             `${currentAlert.dateLabel || currentAlert.date} | 供应商采购预警`;
     }
@@ -797,12 +781,24 @@
         const detail = document.getElementById('reportDetail');
         detail.classList.add('active');
 
-        let html = `<button class="back-btn" onclick="closeReport()">← 返回报告列表</button>`;
-        html += `<div class="report-html-body">`;
-        html += currentReport.htmlBody;
-        html += `</div>`;
-
-        detail.innerHTML = html;
+        // 通过 fetch 加载对应的 HTML 文件
+        detail.innerHTML = `<button class="back-btn" onclick="closeReport()">← 返回报告列表</button>` +
+            `<div class="report-html-body"><div class="loading">加载中...</div></div>`;
+        if (!currentReport.file) {
+            detail.innerHTML = `<button class="back-btn" onclick="closeReport()">← 返回报告列表</button>` +
+                `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无内容</div></div>`;
+            return;
+        }
+        fetch(currentReport.file)
+            .then(r => r.text())
+            .then(html => {
+                detail.innerHTML = `<button class="back-btn" onclick="closeReport()">← 返回报告列表</button>` +
+                    `<div class="report-html-body">${html}</div>`;
+            })
+            .catch(() => {
+                detail.innerHTML = `<button class="back-btn" onclick="closeReport()">← 返回报告列表</button>` +
+                    `<div class="empty-state"><div class="icon">⚠️</div><div class="text">内容加载失败</div></div>`;
+            });
         document.getElementById('updateTime').textContent =
             `${currentReport.supplierName} | 供应商采购报告`;
         window.scrollTo(0, 0);
@@ -816,27 +812,32 @@
     }
 
     // ===== 初始化 =====
-    // 动态计算顶栏高度，避免遮挡
-    function adjustContentPadding() {
-        const topBar = document.querySelector('.top-bar');
-        const mainContent = document.querySelector('.main-content');
-        if (topBar && mainContent) {
-            mainContent.style.paddingTop = topBar.offsetHeight + 'px';
+    function initUI() {
+        // 动态计算顶栏高度，避免遮挡
+        function adjustContentPadding() {
+            const topBar = document.querySelector('.top-bar');
+            const mainContent = document.querySelector('.main-content');
+            if (topBar && mainContent) {
+                mainContent.style.paddingTop = topBar.offsetHeight + 'px';
+            }
+        }
+        adjustContentPadding();
+        window.addEventListener('resize', adjustContentPadding);
+
+        if (ALERTS.length > 0) {
+            renderDateTabs();
+            selectAlert(0);
+        } else {
+            document.getElementById('dateTabs').innerHTML = '';
+            document.getElementById('statsBar').innerHTML = '';
+            document.getElementById('reportContent').innerHTML =
+                `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无预警数据</div></div>`;
+            document.getElementById('updateTime').textContent = '供应商采购预警';
         }
     }
-    adjustContentPadding();
-    window.addEventListener('resize', adjustContentPadding);
 
-    if (ALERTS.length > 0) {
-        renderDateTabs();
-        selectAlert(0);
-    } else {
-        document.getElementById('dateTabs').innerHTML = '';
-        document.getElementById('statsBar').innerHTML = '';
-        document.getElementById('reportContent').innerHTML =
-            `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无预警数据</div></div>`;
-        document.getElementById('updateTime').textContent = '供应商采购预警';
-    }
+    // 启动
+    loadData();
     </script>
 </body>
 </html>

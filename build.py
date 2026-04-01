@@ -1,90 +1,79 @@
 """
-采购风险看板 - 构建脚本（整篇渲染版）
-- 预警快报和采购报告均整篇 Markdown → HTML 渲染，零解析
-- 读取 output/alerts_summary.json 和 output/reports_data.json（由 AI 整理）
-- 用 markdown 库将 fileContent 渲染成 htmlBody，注入模板
+采购风险看板 - 构建脚本（增量索引版）
+- 扫描 dist/alerts/ 和 dist/reports/ 目录，收集所有 .json 元数据文件
+- 生成 dist/index.json 汇总索引
+- 将 index.html 模板复制到 dist/index.html（前端通过 fetch 加载数据）
+
+增量策略：
+- AI 在数据采集阶段已将每份快报/报告拆为独立的 .html + .json
+- 本脚本只需汇总索引，不重新渲染任何内容
 """
 
 import json
 import os
-import markdown
+import shutil
 
 # 路径配置
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_PATH = os.path.join(SCRIPT_DIR, "index.html")
-DIST_PATH = os.path.join(SCRIPT_DIR, "dist", "index.html")
-ALERTS_JSON = os.path.join(SCRIPT_DIR, "output", "alerts_summary.json")
-REPORTS_JSON = os.path.join(SCRIPT_DIR, "output", "reports_data.json")
+DIST_DIR = os.path.join(SCRIPT_DIR, "dist")
+DIST_INDEX_HTML = os.path.join(DIST_DIR, "index.html")
+DIST_INDEX_JSON = os.path.join(DIST_DIR, "index.json")
+ALERTS_DIR = os.path.join(DIST_DIR, "alerts")
+REPORTS_DIR = os.path.join(DIST_DIR, "reports")
 
-MD = markdown.Markdown(extensions=["tables", "fenced_code", "toc"])
+
+def load_json_files(directory):
+    """扫描目录下所有 .json 文件，返回列表"""
+    results = []
+    if not os.path.isdir(directory):
+        return results
+    for fname in sorted(os.listdir(directory)):
+        if fname.endswith(".json"):
+            fpath = os.path.join(directory, fname)
+            try:
+                with open(fpath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                results.append(data)
+                print(f"    [OK] {fname}")
+            except (json.JSONDecodeError, OSError) as e:
+                print(f"    [ERR] {fname}: {e}")
+    return results
 
 
 def build():
-    # 读取模板
-    with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
-        template = f.read()
+    # 确保输出目录存在
+    os.makedirs(DIST_DIR, exist_ok=True)
+    os.makedirs(ALERTS_DIR, exist_ok=True)
+    os.makedirs(REPORTS_DIR, exist_ok=True)
 
-    # 读取预警快报 JSON
-    alerts_raw = []
-    if os.path.exists(ALERTS_JSON):
-        with open(ALERTS_JSON, "r", encoding="utf-8") as f:
-            alerts_raw = json.load(f)
-        print(f"  ✅ 预警快报 JSON: {ALERTS_JSON} ({len(alerts_raw)} 份)")
-    else:
-        print(f"  ⚠️ 预警快报 JSON 不存在: {ALERTS_JSON}")
+    # 收集预警快报元数据
+    print("  扫描预警快报...")
+    alerts = load_json_files(ALERTS_DIR)
 
-    # 读取采购报告 JSON
-    reports_raw = []
-    if os.path.exists(REPORTS_JSON):
-        with open(REPORTS_JSON, "r", encoding="utf-8") as f:
-            reports_raw = json.load(f)
-        print(f"  ✅ 采购报告 JSON: {REPORTS_JSON} ({len(reports_raw)} 份)")
-    else:
-        print(f"  ⚠️ 采购报告 JSON 不存在: {REPORTS_JSON}")
+    # 收集采购报告元数据
+    print("  扫描采购报告...")
+    reports = load_json_files(REPORTS_DIR)
 
-    # 整篇渲染预警快报
-    alerts = []
-    for item in alerts_raw:
-        MD.reset()
-        html_body = MD.convert(item.get("fileContent", ""))
-        alerts.append({
-            "date": item.get("date", ""),
-            "dateLabel": item.get("dateLabel", ""),
-            "htmlBody": html_body,
-            "summary": item.get("summary", {"high": 0, "mid": 0, "low": 0, "none": 0}),
-        })
-        print(f"    📄 渲染快报: {item.get('date', '?')}")
+    # 生成索引文件
+    index_data = {
+        "alerts": alerts,
+        "reports": reports,
+        "updatedAt": os.popen("powershell -Command Get-Date -Format 'yyyy-MM-dd HH:mm'").read().strip()
+    }
 
-    # 整篇渲染采购报告
-    reports = []
-    for item in reports_raw:
-        MD.reset()
-        html_body = MD.convert(item.get("fileContent", ""))
-        reports.append({
-            "supplierName": item.get("supplierName", ""),
-            "product": item.get("product", ""),
-            "reportDate": item.get("reportDate", ""),
-            "overallRisk": item.get("overallRisk", "none"),
-            "summary": item.get("summary", ""),
-            "htmlBody": html_body,
-        })
-        print(f"    📄 渲染报告: {item.get('supplierName', '?')}")
+    with open(DIST_INDEX_JSON, "w", encoding="utf-8") as f:
+        json.dump(index_data, f, ensure_ascii=False, indent=2)
 
-    # 注入数据
-    alerts_json = json.dumps(alerts, ensure_ascii=False, indent=2)
-    reports_json = json.dumps(reports, ensure_ascii=False, indent=2)
-    html = template.replace("__ALERTS_DATA__", alerts_json)
-    html = html.replace("__REPORTS_DATA__", reports_json)
+    # 复制 index.html 模板到 dist
+    shutil.copy2(TEMPLATE_PATH, DIST_INDEX_HTML)
 
-    # 写入 dist
-    os.makedirs(os.path.dirname(DIST_PATH), exist_ok=True)
-    with open(DIST_PATH, "w", encoding="utf-8") as f:
-        f.write(html)
-
-    print(f"\n🎉 构建完成: {DIST_PATH}")
-    print(f"   预警快报: {len(alerts)} 份")
-    print(f"   采购报告: {len(reports)} 份")
-    return DIST_PATH
+    print(f"\n  构建完成!")
+    print(f"    预警快报: {len(alerts)} 份")
+    print(f"    采购报告: {len(reports)} 份")
+    print(f"    索引文件: {DIST_INDEX_JSON}")
+    print(f"    看板页面: {DIST_INDEX_HTML}")
+    return DIST_INDEX_HTML
 
 
 if __name__ == "__main__":

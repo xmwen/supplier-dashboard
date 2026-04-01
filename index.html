@@ -620,12 +620,29 @@
     </div>
 
     <script>
-    // 数据 - 由构建脚本生成
-    const ALERTS = __ALERTS_DATA__;
-    const REPORTS = __REPORTS_DATA__;
-
+    // 数据 - 通过 fetch 异步加载 index.json
+    let ALERTS = [];
+    let REPORTS = [];
     let currentAlert = null;
     let currentReport = null;
+
+    // ===== 数据加载 =====
+    async function loadData() {
+        try {
+            const resp = await fetch('index.json');
+            const data = await resp.json();
+            ALERTS = data.alerts || [];
+            REPORTS = data.reports || [];
+            if (data.updatedAt) {
+                document.getElementById('updateTime').textContent = '更新于 ' + data.updatedAt;
+            }
+            initUI();
+        } catch (e) {
+            document.getElementById('reportContent').innerHTML =
+                `<div class="empty-state"><div class="icon">⚠️</div><div class="text">数据加载失败</div></div>`;
+            console.error('Failed to load index.json:', e);
+        }
+    }
 
     // ===== 页面切换 =====
     function switchPage(page) {
@@ -644,7 +661,6 @@
                 renderReportList();
             }
         }
-        // 切换页面时滚动到顶部
         window.scrollTo(0, 0);
     }
 
@@ -686,6 +702,9 @@
     function renderDateTabs() {
         const container = document.getElementById('dateTabs');
         container.innerHTML = '';
+        // 按日期倒序排列（最新在前）
+        const sorted = [...ALERTS].reverse();
+        ALERTS = sorted;
         ALERTS.forEach((alert, idx) => {
             const tab = document.createElement('div');
             tab.className = 'date-tab' + (idx === 0 ? ' active' : '');
@@ -709,22 +728,27 @@
         `;
     }
 
-    function renderAlertContent(alert) {
-        const container = document.getElementById('reportContent');
-        if (!alert) {
-            container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无预警数据</div></div>`;
-            return;
-        }
-        container.innerHTML = `<div class="report-html-body">${alert.htmlBody || ''}</div>`;
-    }
-
     function selectAlert(idx) {
         currentAlert = ALERTS[idx];
         document.querySelectorAll('.date-tab').forEach((tab, i) => {
             tab.classList.toggle('active', i === idx);
         });
         renderStats(currentAlert);
-        renderAlertContent(currentAlert);
+        // 通过 fetch 加载对应的 HTML 文件
+        const container = document.getElementById('reportContent');
+        if (!currentAlert.file) {
+            container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无内容</div></div>`;
+            return;
+        }
+        container.innerHTML = `<div class="loading">加载中...</div>`;
+        fetch(currentAlert.file)
+            .then(r => r.text())
+            .then(html => {
+                container.innerHTML = `<div class="report-html-body">${html}</div>`;
+            })
+            .catch(() => {
+                container.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><div class="text">内容加载失败</div></div>`;
+            });
         document.getElementById('updateTime').textContent =
             `${currentAlert.dateLabel || currentAlert.date} | 供应商采购预警`;
     }
@@ -757,12 +781,24 @@
         const detail = document.getElementById('reportDetail');
         detail.classList.add('active');
 
-        let html = `<button class="back-btn" onclick="closeReport()">← 返回报告列表</button>`;
-        html += `<div class="report-html-body">`;
-        html += currentReport.htmlBody;
-        html += `</div>`;
-
-        detail.innerHTML = html;
+        // 通过 fetch 加载对应的 HTML 文件
+        detail.innerHTML = `<button class="back-btn" onclick="closeReport()">← 返回报告列表</button>` +
+            `<div class="report-html-body"><div class="loading">加载中...</div></div>`;
+        if (!currentReport.file) {
+            detail.innerHTML = `<button class="back-btn" onclick="closeReport()">← 返回报告列表</button>` +
+                `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无内容</div></div>`;
+            return;
+        }
+        fetch(currentReport.file)
+            .then(r => r.text())
+            .then(html => {
+                detail.innerHTML = `<button class="back-btn" onclick="closeReport()">← 返回报告列表</button>` +
+                    `<div class="report-html-body">${html}</div>`;
+            })
+            .catch(() => {
+                detail.innerHTML = `<button class="back-btn" onclick="closeReport()">← 返回报告列表</button>` +
+                    `<div class="empty-state"><div class="icon">⚠️</div><div class="text">内容加载失败</div></div>`;
+            });
         document.getElementById('updateTime').textContent =
             `${currentReport.supplierName} | 供应商采购报告`;
         window.scrollTo(0, 0);
@@ -776,27 +812,32 @@
     }
 
     // ===== 初始化 =====
-    // 动态计算顶栏高度，避免遮挡
-    function adjustContentPadding() {
-        const topBar = document.querySelector('.top-bar');
-        const mainContent = document.querySelector('.main-content');
-        if (topBar && mainContent) {
-            mainContent.style.paddingTop = topBar.offsetHeight + 'px';
+    function initUI() {
+        // 动态计算顶栏高度，避免遮挡
+        function adjustContentPadding() {
+            const topBar = document.querySelector('.top-bar');
+            const mainContent = document.querySelector('.main-content');
+            if (topBar && mainContent) {
+                mainContent.style.paddingTop = topBar.offsetHeight + 'px';
+            }
+        }
+        adjustContentPadding();
+        window.addEventListener('resize', adjustContentPadding);
+
+        if (ALERTS.length > 0) {
+            renderDateTabs();
+            selectAlert(0);
+        } else {
+            document.getElementById('dateTabs').innerHTML = '';
+            document.getElementById('statsBar').innerHTML = '';
+            document.getElementById('reportContent').innerHTML =
+                `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无预警数据</div></div>`;
+            document.getElementById('updateTime').textContent = '供应商采购预警';
         }
     }
-    adjustContentPadding();
-    window.addEventListener('resize', adjustContentPadding);
 
-    if (ALERTS.length > 0) {
-        renderDateTabs();
-        selectAlert(0);
-    } else {
-        document.getElementById('dateTabs').innerHTML = '';
-        document.getElementById('statsBar').innerHTML = '';
-        document.getElementById('reportContent').innerHTML =
-            `<div class="empty-state"><div class="icon">📭</div><div class="text">暂无预警数据</div></div>`;
-        document.getElementById('updateTime').textContent = '供应商采购预警';
-    }
+    // 启动
+    loadData();
     </script>
 </body>
 </html>
