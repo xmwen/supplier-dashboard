@@ -45,7 +45,7 @@ if "$PYTHON_PATH" "$BUILD_SCRIPT"; then
         
         # 推送（使用SSH端口443）
         echo "3. 推送到GitHub..."
-        GIT_SSH_COMMAND="ssh -o Port=443" git push origin main
+        git push origin main
         
         echo "✅ 推送成功"
         echo "=== 任务完成 ==="
