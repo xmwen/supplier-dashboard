@@ -240,6 +240,7 @@ def build():
     # 注入数据到模板
     reports_json = json.dumps(reports, ensure_ascii=False, indent=2)
     html = template.replace("__REPORTS_DATA__", reports_json)
+    html = html.replace("__REPORTS_DATA__", reports_json)  # 兼容两种写法
 
     # 写入 dist
     os.makedirs(os.path.dirname(DIST_PATH), exist_ok=True)
