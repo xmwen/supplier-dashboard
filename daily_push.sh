@@ -7,9 +7,10 @@ set -e
 echo "=== 采购看板每日推送开始 ==="
 echo "时间: $(date '+%Y-%m-%d %H:%M:%S')"
 
-WORKDIR="D:/workbuddy/supplier_dashboard"
-PYTHON_PATH="C:/Users/chens/AppData/Local/Programs/Python/Python312/python.exe"
+WORKDIR="/home/hughxmwen/workspace/supplier_dashboard"
+PYTHON_PATH="python3"
 BUILD_SCRIPT="build.py"
+GIT_REPO="https://xmwen.github.io/supplier-dashboard/"
 
 # 进入工作目录
 cd "$WORKDIR" || { echo "错误：无法进入工作目录 $WORKDIR"; exit 1; }
