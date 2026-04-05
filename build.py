@@ -28,8 +28,8 @@ DIST_DIR = os.path.join(SCRIPT_DIR, "dist")
 ALERTS_DIR = os.path.join(DIST_DIR, "alerts")
 REPORTS_DIR = os.path.join(DIST_DIR, "reports")
 
-ALERT_SOURCE_DIR = r"D:\workbuddy\supplier_discover\output"
-REPORT_SOURCE_DIR = r"D:\workbuddy\supplier_analysis\output"
+ALERT_SOURCE_DIR = "/home/hughxmwen/workspace/supplier_discover/output"
+REPORT_SOURCE_DIR = "/home/hughxmwen/workspace/supplier_analysis/output"
 
 
 # ── 工具函数 ──────────────────────────────────────────────
