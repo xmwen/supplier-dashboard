@@ -34,6 +34,11 @@
       "date": "2026-04-07",
       "dateLabel": "2026年4月7日",
       "file": "alerts/2026-04-07.html"
+    },
+    {
+      "date": "2026-04-08",
+      "dateLabel": "2026年4月8日",
+      "file": "alerts/2026-04-08.html"
     }
   ],
   "reports": [
@@ -50,5 +55,5 @@
       "file": "reports/村田-MLCC.html"
     }
   ],
-  "updatedAt": "2026-04-07 22:46"
+  "updatedAt": "2026-04-08 07:50"
 }
