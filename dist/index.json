@@ -189,6 +189,11 @@
       "date": "2026-05-12",
       "dateLabel": "2026年5月12日",
       "file": "alerts/2026-05-12.html"
+    },
+    {
+      "date": "2026-05-13",
+      "dateLabel": "2026年5月13日",
+      "file": "alerts/2026-05-13.html"
     }
   ],
   "reports": [
@@ -205,5 +210,5 @@
       "file": "reports/村田-MLCC.html"
     }
   ],
-  "updatedAt": "2026-05-12 07:50"
+  "updatedAt": "2026-05-13 07:50"
 }
